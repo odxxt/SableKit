@@ -1,0 +1,484 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-12T15:03:21.405Z",
+  "title": "Design System: SableKit",
+  "extensions": {
+    "colorMeta": {
+      "surface": {
+        "role": "neutral",
+        "displayName": "Smoked charcoal",
+        "tonalRamp": [
+          "oklch(15% 0.005 285)",
+          "oklch(26% 0.005 285)",
+          "oklch(38% 0.005 285)",
+          "oklch(49% 0.005 285)",
+          "oklch(61% 0.005 285)",
+          "oklch(72% 0.005 285)",
+          "oklch(84% 0.005 285)",
+          "oklch(95% 0.005 285)"
+        ]
+      },
+      "light-surface": {
+        "role": "neutral",
+        "displayName": "Light · Smoked charcoal",
+        "tonalRamp": [
+          "oklch(15% 0.005 285)",
+          "oklch(26% 0.005 285)",
+          "oklch(38% 0.005 285)",
+          "oklch(49% 0.005 285)",
+          "oklch(61% 0.005 285)",
+          "oklch(72% 0.005 285)",
+          "oklch(84% 0.005 285)",
+          "oklch(95% 0.005 285)"
+        ]
+      },
+      "panel-surface": {
+        "role": "neutral",
+        "displayName": "Translucent charcoal",
+        "tonalRamp": [
+          "oklch(15% 0.005 285)",
+          "oklch(26% 0.005 285)",
+          "oklch(38% 0.005 285)",
+          "oklch(49% 0.005 285)",
+          "oklch(61% 0.005 285)",
+          "oklch(72% 0.005 285)",
+          "oklch(84% 0.005 285)",
+          "oklch(95% 0.005 285)"
+        ]
+      },
+      "light-panel-surface": {
+        "role": "neutral",
+        "displayName": "Light · Translucent charcoal",
+        "tonalRamp": [
+          "oklch(15% 0.005 285)",
+          "oklch(26% 0.005 285)",
+          "oklch(38% 0.005 285)",
+          "oklch(49% 0.005 285)",
+          "oklch(61% 0.005 285)",
+          "oklch(72% 0.005 285)",
+          "oklch(84% 0.005 285)",
+          "oklch(95% 0.005 285)"
+        ]
+      },
+      "inset": {
+        "role": "neutral",
+        "displayName": "Inset charcoal",
+        "tonalRamp": [
+          "oklch(15% 0.005 285)",
+          "oklch(26% 0.005 285)",
+          "oklch(38% 0.005 285)",
+          "oklch(49% 0.005 285)",
+          "oklch(61% 0.005 285)",
+          "oklch(72% 0.005 285)",
+          "oklch(84% 0.005 285)",
+          "oklch(95% 0.005 285)"
+        ]
+      },
+      "light-inset": {
+        "role": "neutral",
+        "displayName": "Light · Inset charcoal",
+        "tonalRamp": [
+          "oklch(15% 0.005 285)",
+          "oklch(26% 0.005 285)",
+          "oklch(38% 0.005 285)",
+          "oklch(49% 0.005 285)",
+          "oklch(61% 0.005 285)",
+          "oklch(72% 0.005 285)",
+          "oklch(84% 0.005 285)",
+          "oklch(95% 0.005 285)"
+        ]
+      },
+      "hover": {
+        "role": "neutral",
+        "displayName": "Hover charcoal",
+        "tonalRamp": [
+          "oklch(15% 0.005 285)",
+          "oklch(26% 0.005 285)",
+          "oklch(38% 0.005 285)",
+          "oklch(49% 0.005 285)",
+          "oklch(61% 0.005 285)",
+          "oklch(72% 0.005 285)",
+          "oklch(84% 0.005 285)",
+          "oklch(95% 0.005 285)"
+        ]
+      },
+      "light-hover": {
+        "role": "neutral",
+        "displayName": "Light · Hover charcoal",
+        "tonalRamp": [
+          "oklch(15% 0.005 285)",
+          "oklch(26% 0.005 285)",
+          "oklch(38% 0.005 285)",
+          "oklch(49% 0.005 285)",
+          "oklch(61% 0.005 285)",
+          "oklch(72% 0.005 285)",
+          "oklch(84% 0.005 285)",
+          "oklch(95% 0.005 285)"
+        ]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Charcoal outline",
+        "tonalRamp": [
+          "oklch(15% 0.005 285)",
+          "oklch(26% 0.005 285)",
+          "oklch(38% 0.005 285)",
+          "oklch(49% 0.005 285)",
+          "oklch(61% 0.005 285)",
+          "oklch(72% 0.005 285)",
+          "oklch(84% 0.005 285)",
+          "oklch(95% 0.005 285)"
+        ]
+      },
+      "light-border": {
+        "role": "neutral",
+        "displayName": "Light · Charcoal outline",
+        "tonalRamp": [
+          "oklch(15% 0.005 285)",
+          "oklch(26% 0.005 285)",
+          "oklch(38% 0.005 285)",
+          "oklch(49% 0.005 285)",
+          "oklch(61% 0.005 285)",
+          "oklch(72% 0.005 285)",
+          "oklch(84% 0.005 285)",
+          "oklch(95% 0.005 285)"
+        ]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Soft white",
+        "tonalRamp": [
+          "oklch(15% 0.005 285)",
+          "oklch(26% 0.005 285)",
+          "oklch(38% 0.005 285)",
+          "oklch(49% 0.005 285)",
+          "oklch(61% 0.005 285)",
+          "oklch(72% 0.005 285)",
+          "oklch(84% 0.005 285)",
+          "oklch(95% 0.005 285)"
+        ]
+      },
+      "light-text": {
+        "role": "neutral",
+        "displayName": "Light · Soft white",
+        "tonalRamp": [
+          "oklch(15% 0.005 285)",
+          "oklch(26% 0.005 285)",
+          "oklch(38% 0.005 285)",
+          "oklch(49% 0.005 285)",
+          "oklch(61% 0.005 285)",
+          "oklch(72% 0.005 285)",
+          "oklch(84% 0.005 285)",
+          "oklch(95% 0.005 285)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Quiet gray",
+        "tonalRamp": [
+          "oklch(15% 0.005 285)",
+          "oklch(26% 0.005 285)",
+          "oklch(38% 0.005 285)",
+          "oklch(49% 0.005 285)",
+          "oklch(61% 0.005 285)",
+          "oklch(72% 0.005 285)",
+          "oklch(84% 0.005 285)",
+          "oklch(95% 0.005 285)"
+        ]
+      },
+      "light-muted": {
+        "role": "neutral",
+        "displayName": "Light · Quiet gray",
+        "tonalRamp": [
+          "oklch(15% 0.005 285)",
+          "oklch(26% 0.005 285)",
+          "oklch(38% 0.005 285)",
+          "oklch(49% 0.005 285)",
+          "oklch(61% 0.005 285)",
+          "oklch(72% 0.005 285)",
+          "oklch(84% 0.005 285)",
+          "oklch(95% 0.005 285)"
+        ]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "White emphasis",
+        "tonalRamp": [
+          "oklch(15% 0.005 285)",
+          "oklch(26% 0.005 285)",
+          "oklch(38% 0.005 285)",
+          "oklch(49% 0.005 285)",
+          "oklch(61% 0.005 285)",
+          "oklch(72% 0.005 285)",
+          "oklch(84% 0.005 285)",
+          "oklch(95% 0.005 285)"
+        ]
+      },
+      "light-accent": {
+        "role": "primary",
+        "displayName": "Light · White emphasis",
+        "tonalRamp": [
+          "oklch(15% 0.005 285)",
+          "oklch(26% 0.005 285)",
+          "oklch(38% 0.005 285)",
+          "oklch(49% 0.005 285)",
+          "oklch(61% 0.005 285)",
+          "oklch(72% 0.005 285)",
+          "oklch(84% 0.005 285)",
+          "oklch(95% 0.005 285)"
+        ]
+      },
+      "accent-text": {
+        "role": "neutral",
+        "displayName": "Charcoal on white",
+        "tonalRamp": [
+          "oklch(15% 0.005 285)",
+          "oklch(26% 0.005 285)",
+          "oklch(38% 0.005 285)",
+          "oklch(49% 0.005 285)",
+          "oklch(61% 0.005 285)",
+          "oklch(72% 0.005 285)",
+          "oklch(84% 0.005 285)",
+          "oklch(95% 0.005 285)"
+        ]
+      },
+      "light-accent-text": {
+        "role": "neutral",
+        "displayName": "Light · Charcoal on white",
+        "tonalRamp": [
+          "oklch(15% 0.005 285)",
+          "oklch(26% 0.005 285)",
+          "oklch(38% 0.005 285)",
+          "oklch(49% 0.005 285)",
+          "oklch(61% 0.005 285)",
+          "oklch(72% 0.005 285)",
+          "oklch(84% 0.005 285)",
+          "oklch(95% 0.005 285)"
+        ]
+      },
+      "good": {
+        "role": "semantic",
+        "displayName": "Success resource",
+        "tonalRamp": [
+          "oklch(15% 0.055 150)",
+          "oklch(26% 0.055 150)",
+          "oklch(38% 0.055 150)",
+          "oklch(49% 0.055 150)",
+          "oklch(61% 0.055 150)",
+          "oklch(72% 0.055 150)",
+          "oklch(84% 0.055 150)",
+          "oklch(95% 0.055 150)"
+        ]
+      },
+      "light-good": {
+        "role": "semantic",
+        "displayName": "Light · Success resource",
+        "tonalRamp": [
+          "oklch(15% 0.055 150)",
+          "oklch(26% 0.055 150)",
+          "oklch(38% 0.055 150)",
+          "oklch(49% 0.055 150)",
+          "oklch(61% 0.055 150)",
+          "oklch(72% 0.055 150)",
+          "oklch(84% 0.055 150)",
+          "oklch(95% 0.055 150)"
+        ]
+      },
+      "bad": {
+        "role": "semantic",
+        "displayName": "Failure text",
+        "tonalRamp": [
+          "oklch(15% 0.055 25)",
+          "oklch(26% 0.055 25)",
+          "oklch(38% 0.055 25)",
+          "oklch(49% 0.055 25)",
+          "oklch(61% 0.055 25)",
+          "oklch(72% 0.055 25)",
+          "oklch(84% 0.055 25)",
+          "oklch(95% 0.055 25)"
+        ]
+      },
+      "light-bad": {
+        "role": "semantic",
+        "displayName": "Light · Failure text",
+        "tonalRamp": [
+          "oklch(15% 0.055 25)",
+          "oklch(26% 0.055 25)",
+          "oklch(38% 0.055 25)",
+          "oklch(49% 0.055 25)",
+          "oklch(61% 0.055 25)",
+          "oklch(72% 0.055 25)",
+          "oklch(84% 0.055 25)",
+          "oklch(95% 0.055 25)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "headline": {
+        "displayName": "Page heading",
+        "purpose": "Main-window page title; WPF DIP."
+      },
+      "title": {
+        "displayName": "Editor title",
+        "purpose": "Configure action title; WPF DIP."
+      },
+      "body": {
+        "displayName": "Interface body",
+        "purpose": "Default Segoe UI window typography."
+      },
+      "label": {
+        "displayName": "Field label",
+        "purpose": "Semibold form labels."
+      },
+      "metadata": {
+        "displayName": "Supporting text",
+        "purpose": "MutedText style."
+      },
+      "compact-metadata": {
+        "displayName": "Compact supporting text",
+        "purpose": "Tray metadata and keyboard hints."
+      },
+      "result": {
+        "displayName": "Network result",
+        "purpose": "Consolas read-only results."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "copied-feedback",
+        "value": "WPF DoubleAnimation: opacity 0.65 → 1; 140 ms; FillBehavior.Stop",
+        "purpose": "Only while visible, application reduced motion is off, and SystemParameters.ClientAreaAnimation is true."
+      }
+    ],
+    "breakpoints": [],
+    "native": {
+      "platform": "Windows WPF",
+      "units": "All source dimensions use WPF DIP. CSS pixels in component previews are illustrative translations only.",
+      "sources": [
+        "src/SableKit.Desktop/ThemeManager.cs",
+        "src/SableKit.Desktop/Theme.xaml",
+        "src/SableKit.Desktop/Ui.cs",
+        "src/SableKit.Desktop/TrayWindow.xaml",
+        "src/SableKit.Desktop/TrayWindow.xaml.cs",
+        "src/SableKit.Desktop/MainWindow.xaml",
+        "src/SableKit.Desktop/MainWindow.xaml.cs",
+        "src/SableKit.Desktop/NetworkWindow.xaml",
+        "src/SableKit.Desktop/Icon.cs",
+        "src/SableKit.Desktop/NativeWindow.cs"
+      ],
+      "alphaEncoding": "Frontmatter panel colors use CSS RRGGBBAA; WPF uses AARRGGBB. RGB and alpha are unchanged.",
+      "rampProvenance": "Tonal ramps are synthetic OKLCH display aids only. They are not runtime palette values, established design tokens or new palette commitments.",
+      "material": "Native transient-window/main-window system backdrop request on Windows build 22621+ outside high contrast and when enabled. API acceptance does not verify appearance.",
+      "highContrast": "Runtime brushes map to SystemColors WindowBrush, WindowTextBrush and HighlightBrush. Native behavior remains partially unverified.",
+      "verification": "Prototype review only. VERIFICATION.md: six implementation findings resolved; physical input/tray, compositor, high contrast, multiple DPI/monitors and Windows 10 remain verification items. Finish disposition: fix.",
+      "detector": "Web/CSS detector is not applicable to native WPF source. Sidecar previews are not the shipped interface."
+    }
+  },
+  "components": [
+    {
+      "name": "Primary button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Browser illustration of the WPF primary style; DIP measurements translated to CSS pixels.",
+      "html": "<button class=\"ds-button ds-primary\">Save action</button>",
+      "css": ".ds-primary{font-family:'Segoe UI',sans-serif;font-size:13px;border:1px solid transparent;border-radius:12px;min-height:32px;padding:8px 12px;cursor:pointer;background:#F4F4F5;color:#19191C;font-weight:600}.ds-button:hover{background:#333337;color:#F4F4F5}.ds-button:focus-visible{outline:1px solid #F4F4F5;outline-offset:-3px;border-color:#F4F4F5}.ds-button:active{opacity:.72}.ds-button:disabled{opacity:.45;cursor:default}"
+    },
+    {
+      "name": "Filled button",
+      "kind": "button",
+      "refersTo": "button-filled",
+      "description": "Secondary action with an inset surface and thin outline.",
+      "html": "<button class=\"ds-button ds-filled\">Test run</button>",
+      "css": ".ds-filled{font-family:'Segoe UI',sans-serif;font-size:13px;border:1px solid transparent;border-radius:12px;min-height:32px;padding:8px 12px;cursor:pointer;background:#232326;color:#F4F4F5;border-color:#434348}.ds-button:hover{background:#333337;color:#F4F4F5}.ds-button:focus-visible{outline:1px solid #F4F4F5;outline-offset:-3px;border-color:#F4F4F5}.ds-button:active{opacity:.72}.ds-button:disabled{opacity:.45;cursor:default}"
+    },
+    {
+      "name": "Ghost button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Quiet action; browser sample has a charcoal backing for legibility.",
+      "html": "<div class=\"ds-canvas\"><button class=\"ds-button ds-ghost\">Open app</button></div>",
+      "css": ".ds-canvas{background:#18181B;padding:8px}.ds-ghost{font-family:'Segoe UI',sans-serif;font-size:13px;border:1px solid transparent;border-radius:12px;min-height:32px;padding:8px 12px;cursor:pointer;background:transparent;color:#F4F4F5}.ds-button:hover{background:#333337;color:#F4F4F5}.ds-button:focus-visible{outline:1px solid #F4F4F5;outline-offset:-3px;border-color:#F4F4F5}.ds-button:active{opacity:.72}.ds-button:disabled{opacity:.45;cursor:default}"
+    },
+    {
+      "name": "Action field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Persistent label with rounded input; browser focus illustrates the native border treatment.",
+      "html": "<label class=\"ds-field-label\" for=\"ds-action-name\">Name</label><input class=\"ds-field\" id=\"ds-action-name\" value=\"Copy password\"/>",
+      "css": ".ds-field-label{display:block;font:600 12px 'Segoe UI',sans-serif;color:#F4F4F5;background:#18181B;padding:16px 0 7px}.ds-field{font:13px 'Segoe UI',sans-serif;background:#232326;color:#F4F4F5;border:1px solid #434348;border-radius:12px;padding:8px 10px;min-height:36px}.ds-field:focus-visible{outline:none;border-color:#F4F4F5}.ds-field::placeholder{color:#ADADB6}.ds-field:disabled{opacity:.45}"
+    },
+    {
+      "name": "Selected navigation",
+      "kind": "nav",
+      "refersTo": "navigation-selected",
+      "description": "Selected destination in the main sidebar.",
+      "html": "<nav class=\"ds-nav\"><button class=\"ds-nav-item\" aria-current=\"page\">Actions</button></nav>",
+      "css": ".ds-nav{background:#232326;padding:8px;width:160px}.ds-nav-item{font-family:'Segoe UI',sans-serif;font-size:13px;border:1px solid transparent;border-radius:12px;min-height:32px;padding:8px 12px;cursor:pointer;width:100%;text-align:left;padding:11px 10px;background:#333337;color:#F4F4F5}.ds-nav-item:hover{background:#333337}.ds-nav-item:focus-visible{outline:1px solid #F4F4F5;outline-offset:-3px}.ds-nav-item:active{opacity:.72}"
+    },
+    {
+      "name": "Pinned action",
+      "kind": "custom",
+      "refersTo": "action-list",
+      "description": "Fixed-height list action with quiet metadata and shortcut hint.",
+      "html": "<div class=\"ds-action-canvas\"><button class=\"ds-action\"><span class=\"ds-action-text\"><strong>Copy password</strong><small>24 characters · copy</small></span><span class=\"ds-hint\">Alt 1</span></button></div>",
+      "css": ".ds-action-canvas{background:#18181B;padding:4px;width:304px}.ds-action{font-family:'Segoe UI',sans-serif;display:flex;align-items:center;justify-content:space-between;width:100%;height:46px;border:1px solid transparent;border-radius:12px;padding:6px 9px;background:transparent;color:#F4F4F5;cursor:pointer;text-align:left}.ds-action-text strong{display:block;font-size:12px;font-weight:600}.ds-action small,.ds-hint{font-size:10px;color:#ADADB6}.ds-action small{display:block;margin-top:3px}.ds-action:hover{background:#333337}.ds-action:focus-visible{outline:1px solid #F4F4F5;outline-offset:-3px}.ds-action:active{opacity:.72}"
+    },
+    {
+      "name": "Copied action",
+      "kind": "custom",
+      "refersTo": "action-list",
+      "description": "Centered feedback preserves the list action height. This static sample does not execute a clipboard write.",
+      "html": "<div class=\"ds-copied-canvas\"><button class=\"ds-copied\"><svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.45\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12 L10 17 L20 6\"/></svg><span>Copied</span></button></div>",
+      "css": ".ds-copied-canvas{background:#18181B;padding:4px;width:304px}.ds-copied{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;height:46px;font:600 13px 'Segoe UI',sans-serif;background:transparent;color:#F4F4F5;border:1px solid transparent;border-radius:12px;padding:6px 9px}.ds-copied:hover{background:#333337}.ds-copied:focus-visible{outline:1px solid #F4F4F5;outline-offset:-3px}.ds-copied:active{opacity:.72}"
+    },
+    {
+      "name": "Configuration preview",
+      "kind": "card",
+      "refersTo": "configuration-preview",
+      "description": "Simple inset preview of a draft action name, without an added shadow.",
+      "html": "<div class=\"ds-preview\">Copy password</div>",
+      "css": ".ds-preview{font:600 13px 'Segoe UI',sans-serif;border-radius:12px;background:#232326;color:#F4F4F5;padding:12px 14px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Smoky black, neutral charcoal and white",
+    "overview": "SableKit uses the owner's chosen smoky black, neutral charcoal and white direction for a modern, enterprise-quality desktop utility. Subtle Raycast influence and the compact pin/search/click-to-act familiarity of SableLatch inform the implementation. Native Segoe UI, quiet metadata, thin outlines and restrained rounded controls keep actions readable.\n\nThis is an extraction of prototype 0.1, implemented directly in WPF without an approved image composition. It records the current code, not a new branding commitment. Tonal layering supplies the dependable structure; native Windows material is an enhancement whose compositor appearance still needs validation.",
+    "keyCharacteristics": [
+      "Compact controls with clear action labels and quieter supporting text.",
+      "Charcoal and white emphasis, with semantic status resources.",
+      "Original line geometry and native Windows typography.",
+      "Stable action dimensions during running and Copied feedback."
+    ],
+    "rules": [
+      {
+        "name": "The Dynamic Role Rule",
+        "body": "Use WPF DynamicResource/SetResourceReference role keys for themed UI rather than hardcoded per-control colors.",
+        "section": "colors"
+      },
+      {
+        "name": "The Readable Surface Rule",
+        "body": "Maintain contrast on the ordinary charcoal/light surface; native material must not be necessary to understand a control.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Stable Feedback Rule",
+        "body": "Running and Copied feedback retain the action's dimensions and preserve keyboard focus across updates.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "Do use the dynamic WPF resource roles so theme changes reach controls.",
+      "Do preserve action bounds and keyboard focus when feedback changes.",
+      "Do show Copied only after the clipboard write succeeds.",
+      "Do keep settings labels visible and editor actions reachable below the scrolling form.",
+      "Do treat native material, high contrast and physical-input behavior as pending platform verification."
+    ],
+    "donts": [
+      "Don't add continuous or hidden-window animation.",
+      "Don't rely on blur for contrast or distinguish status by color alone.",
+      "Don't present browser component previews as native WPF or compositor evidence.",
+      "Don't describe the prototype or its lightweight performance goal as ship-validated."
+    ]
+  }
+}

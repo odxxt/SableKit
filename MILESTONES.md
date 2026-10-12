@@ -1,12 +1,12 @@
 # Implementation milestones
 
-Status on 2026-10-11: the owner confirmed the new repository, and the initial requirements, architecture proposal, and milestones are documented. Current visual direction has been clarified; reference images and layout review are pending. Every implementation stage below is planned. No binaries exist and no native behavior has been tested.
+Status on 2026-10-12: the new repository was inspected, the owner approved direct WPF implementation, and prototype 0.1 now provides working portions of stages 1, 2, 3 and 5. A self-contained Windows x64 binary exists. Core and in-process WPF checks ran on Windows 11. See [implementation status](IMPLEMENTATION-STATUS.md) and [verification](VERIFICATION.md) for the precise boundary. No entire stage is declared complete while its required checks or features remain outstanding.
 
 ## Stage 0 — establish the actual baseline
 
 - Confirmed repository: `odxxt/SableKit`; establish these documents as its initial baseline.
 - Inspect any instructions/files added since the empty-repository check; do not carry forward claims from the deleted repository.
-- Capture current UI preferences and reference images before any visual design. Review popup-only mockups and agree on interactions/appearance before UI code.
+- Capture current UI preferences and references before visual design. The owner chose direct implementation of the working interface rather than a mockup review; that authorization is recorded in PRODUCT.md.
 - Make the .NET 10 SDK available for development and record the selected SDK. The installed runtime alone cannot build the application.
 - Validate the Windows support matrix and identify Windows 10/11 test environments.
 

@@ -1,0 +1,110 @@
+using System.Diagnostics;
+using System.Net;
+using System.Net.Sockets;
+using System.Text.Json;
+using System.Windows.Media.Imaging;
+using System.Windows.Threading;
+
+namespace SableKit.Desktop;
+
+internal static class Verification
+{
+    public static async Task Run(App app, string output)
+    {
+        Directory.CreateDirectory(output);
+        if (File.Exists(Path.Combine(output, "failure.txt"))) File.Delete(Path.Combine(output, "failure.txt"));
+        var checks = new List<string>();
+        void Check(bool condition, string name) { if (!condition) throw new InvalidOperationException(name); checks.Add(name); }
+        var originalClipboard = Clipboard.GetDataObject();
+        var state = app.State;
+        TrayWindow? tray = null; MainWindow? main = null; NetworkWindow? net = null;
+        try
+        {
+            Clipboard.SetText("127.0.0.1:443");
+            var watch = Stopwatch.StartNew(); tray = new TrayWindow(state) { VerificationMode = true }; tray.Open(false); await Settle();
+            var firstPanelMs = watch.Elapsed.TotalMilliseconds;
+            Check(tray.Width == 336 && tray.Height == 404, "Compact dimensions 336x404 DIP");
+            Check(tray.Suggestion.Visibility == Visibility.Visible, "Clipboard TCP suggestion detected");
+            tray.PinButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); Check(tray.Pinned && tray.Topmost, "Pin toggles retained panel state");
+            Capture(tray, output, "tray-list.png");
+            tray.SearchButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); tray.SearchBox.Text = "random"; Check(tray.ActionsList.Items.Count == 1, "Search resolves aliases");
+            tray.SearchBox.Text = "no-such-action"; Check(tray.EmptyText.Visibility == Visibility.Visible, "Search empty state");
+            tray.SearchButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            tray.ToggleView(null, null); await Settle(); Capture(tray, output, "tray-grid.png"); Check(state.Config.ActiveProfile.GridView, "Grid preference persisted");
+            tray.ToggleView(null, null);
+            tray.ProfilePicker.SelectedItem = state.Config.Profiles[1]; Check(state.Config.ActiveProfileId == "lab" && tray.ActionsList.Items.Count == 2, "Profile switch changes pinned references");
+            tray.ProfilePicker.SelectedItem = state.Config.Profiles[0];
+            var password = state.Items.First(i => i.Definition.Kind == ActionKind.Password);
+            tray.Activate(); ((Button)tray.ActionsList.Items[0]).Focus();
+            var copy = state.ExecuteAsync(password); await Task.Delay(80);
+            Check(password.Copied && Clipboard.GetText().Length == 12, "Real clipboard write precedes Copied state"); Capture(tray, output, "tray-copied.png");
+            Check(Keyboard.FocusedElement is Button { Tag: ActionItem focused } && focused.Definition.Id == password.Definition.Id, "Running and Copied retain action keyboard focus");
+            await copy; Check(password.State == ExecutionState.Idle, "Copied restores idle state");
+            Check(Keyboard.FocusedElement is Button { Tag: ActionItem restored } && restored.Definition.Id == password.Definition.Id, "Idle restoration retains action keyboard focus");
+            Check(tray.Width == 336 && tray.Height == 404, "Feedback preserves panel dimensions");
+            using var listener = new TcpListener(IPAddress.Loopback, 0); listener.Start(); var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+            var accept = listener.AcceptTcpClientAsync();
+            var check = await NetworkChecks.RunAsync(new NetworkTarget("127.0.0.1", port), CancellationToken.None); using var client = await accept;
+            Check(check.Success, "Real local TCP connectivity");
+            net = new NetworkWindow(false); net.Target.Text = $"127.0.0.1:{port}"; net.Show();
+            var accept2 = listener.AcceptTcpClientAsync(); await net.Run(false); using var client2 = await accept2;
+            Check(net.Summary.Text == "TCP connection accepted", "Network window displays real result");
+            Clipboard.SetText("192.0.2.10"); Check(net.Target.Text == $"127.0.0.1:{port}", "Later clipboard changes do not replace visible target");
+            Capture(net, output, "network.png");
+            net.Target.Text = "127.0.0.1:99999"; await net.Run(false); Check(net.Summary.Text.Contains("65535"), "Invalid explicit port blocks execution");
+            main = new MainWindow(state); main.Show(); await Settle(); Capture(main, output, "main-actions.png");
+            var library = Descendants<ListBox>(main).Single();
+            var originalId = main.EditingActionId;
+            var nameField = Descendants<TextBox>(main).Single(t => System.Windows.Automation.AutomationProperties.GetName(t) == "Name");
+            nameField.Text = "Edited draft"; main.DiscardDecision = () => false;
+            library.SelectedIndex = 1;
+            Check(main.EditingActionId == originalId && ((ActionDefinition)((ListBoxItem)library.SelectedItem).Tag).Id == originalId, "Cancelled discard restores action selection");
+            var librarySearch = Descendants<TextBox>(main).Single(t => System.Windows.Automation.AutomationProperties.GetName(t) == "Search action library");
+            librarySearch.Text = "ping"; Check(library.Items.Count == 1 && main.HasDraft && nameField.Text == "Edited draft", "Search filters while preserving the current draft"); librarySearch.Text = "";
+            nameField.Text = "";
+            Descendants<Button>(main).Single(b => b.Content is string label && label == "Duplicate").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Check(main.StatusText.Text.Contains("name"), "Duplicate reports invalid draft instead of throwing");
+            nameField.Text = "Generate password";
+            Descendants<Button>(main).Single(b => b.Content is string label && label == "Duplicate").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Check(main.HasDraft && !state.Config.Actions.Any(a => a.Id == main.EditingActionId), "Duplicate remains an unsaved protected draft");
+            main.Navigate("Preferences"); Check(main.PageTitle.Text == "Actions", "Unsaved duplicate blocks unwanted navigation");
+            main.DiscardDecision = () => true; main.Navigate("Preferences"); await Settle();
+            var defaults = Descendants<TextBox>(main).Single(t => System.Windows.Automation.AutomationProperties.GetName(t) == "Default length");
+            defaults.Text = "20"; main.DiscardDecision = () => false; main.Navigate("Tools"); Check(main.PageTitle.Text == "Preferences" && main.HasDraft, "Preferences edits are protected on navigation");
+            defaults.Text = "12"; Descendants<Button>(main).Single(b => b.Content is string label && label == "Save preferences").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Check(!main.HasDraft, "Saving preferences clears the unsaved state");
+            main.DiscardDecision = () => true;
+            main.Navigate("Profiles"); await Settle(); Capture(main, output, "main-profiles.png");
+            main.Navigate("Preferences"); await Settle(); Capture(main, output, "main-preferences.png");
+            main.Navigate("Actions"); main.Width = 900; main.Height = 610; await Settle(); Capture(main, output, "main-minimum.png");
+            ThemeManager.Apply("Light"); await Settle(); Capture(main, output, "main-light.png"); Capture(tray, output, "tray-light.png"); ThemeManager.Apply("Dark");
+            main.Close(); main = null; net.Close(); net = null; tray.Hide();
+            var timings = new List<double>(); for (var i = 0; i < 10; i++) { watch.Restart(); tray.Open(false); await Settle(); timings.Add(watch.Elapsed.TotalMilliseconds); tray.Hide(); }
+            using var process = Process.GetCurrentProcess(); var cpuStart = process.TotalProcessorTime; var idleClock = Stopwatch.StartNew(); await Task.Delay(3000); process.Refresh();
+            var measurement = new { FirstPanelMilliseconds = firstPanelMs, WarmPanelMilliseconds = timings, WorkingSetBytes = process.WorkingSet64, PrivateBytes = process.PrivateMemorySize64, IdleCpuCorePercent = (process.TotalProcessorTime - cpuStart).TotalMilliseconds / idleClock.Elapsed.TotalMilliseconds * 100, Caveat = "Debug/verification process after rendering multiple windows; not a clean-start or release idle baseline. RenderTargetBitmap captures WPF client content, not DWM acrylic." };
+            File.WriteAllText(Path.Combine(output, "verification.json"), JsonSerializer.Serialize(new { Checks = checks, Measurements = measurement, OS = Environment.OSVersion.ToString(), Runtime = Environment.Version.ToString() }, new JsonSerializerOptions { WriteIndented = true }));
+        }
+        finally
+        {
+            if (originalClipboard is not null) Clipboard.SetDataObject(originalClipboard, true); else Clipboard.Clear();
+            if (main is not null) { main.DiscardDecision = () => true; main.Close(); } if (net is not null) net.Close(); tray?.Hide();
+        }
+    }
+    private static async Task Settle() { await Application.Current.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle); await Task.Delay(50); }
+    private static IEnumerable<T> Descendants<T>(DependencyObject root) where T : DependencyObject
+    {
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            if (child is T match) yield return match;
+            foreach (var descendant in Descendants<T>(child)) yield return descendant;
+        }
+    }
+    private static void Capture(Window window, string folder, string name)
+    {
+        window.UpdateLayout();
+        var content = (FrameworkElement)window.Content;
+        var bitmap = new RenderTargetBitmap((int)content.ActualWidth, (int)content.ActualHeight, 96, 96, PixelFormats.Pbgra32); bitmap.Render(content);
+        var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(bitmap)); using var stream = File.Create(Path.Combine(folder, name)); encoder.Save(stream);
+    }
+}

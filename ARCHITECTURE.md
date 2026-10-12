@@ -1,6 +1,6 @@
 # Proposed architecture
 
-Status: non-UI proposal, not implemented. Names below are suggested boundaries, not existing projects. Review current Microsoft platform documentation when implementing native/runtime details.
+Status: target architecture. Prototype 0.1 now implements a small core library and WPF host, described in [implementation status](IMPLEMENTATION-STATUS.md). Names below are proposed future boundaries, not claims that all those projects or services exist. Review current Microsoft platform documentation when implementing native/runtime details.
 
 ## Dependency boundaries
 

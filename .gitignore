@@ -1,0 +1,7 @@
+**/bin/
+**/obj/
+artifacts/
+SableKit-data/
+.vs/
+.impeccable/review/
+*.user
