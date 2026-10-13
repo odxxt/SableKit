@@ -1,3 +1,19 @@
+# Verification — prototype 0.1.1 UI fixes
+
+Recorded 2026-10-13. Release build/publish passed on Windows 11 build 26200 with SDK 10.0.401 / runtime 10.0.12. The WPF harness passed **37 checks**, including the existing action/clipboard/network/draft checks and these UI regressions:
+
+- Borderless pin control, explicit pinned/unpinned title, and persistent active search fill.
+- Small icons lay out at their requested dimensions, allowing one device pixel for layout rounding.
+- Both default grid rows fit with no vertical scrolling; the tool strip has room for complete icons and labels.
+- Initial main-window bounds fit the current monitor work area.
+- Visible minimize/maximize/restore/close commands execute successfully.
+- Main-window fitting stays within simulated logical work areas of 853 × 480, 1024 × 700 (negative monitor origin), and 1920 × 1040.
+- Thirteen fresh WPF client-content captures inspected across list/grid/search/pinned/unpinned/Copied, main normal/small/scaled-workarea, network and light/dark states.
+
+The work-area simulations are layout checks, not physical multi-monitor/DPI-switch tests. Captures include the new WPF title bar, but still do not capture DWM blur. Physical input, live monitor/DPI changes, high contrast, compositor appearance and Windows 10 remain pending. Performance figures below are historical 0.1 baselines; this patch has not remeasured normal idle performance. The harness now starts with fresh diagnostic defaults on each verification run; normal user settings are unchanged.
+
+---
+
 # Verification — prototype 0.1
 
 Recorded 2026-10-12 on Windows 11 x64, OS build 26200, .NET SDK 10.0.401 and published runtime 10.0.12. This documents local evidence; a CI workflow being present is not a claim that its remote run passed.

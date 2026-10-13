@@ -5,4 +5,5 @@
     <AssemblyName>SableKit</AssemblyName><ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup><ProjectReference Include="../SableKit.Core/SableKit.Core.csproj" /></ItemGroup>
+  <ItemGroup><Content Include="../../SABLELATCH-NOTICE.txt;../../THIRD-PARTY-NOTICES.txt" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" /></ItemGroup>
 </Project>

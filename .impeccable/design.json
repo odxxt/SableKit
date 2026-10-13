@@ -371,8 +371,10 @@
       "rampProvenance": "Tonal ramps are synthetic OKLCH display aids only. They are not runtime palette values, established design tokens or new palette commitments.",
       "material": "Native transient-window/main-window system backdrop request on Windows build 22621+ outside high contrast and when enabled. API acceptance does not verify appearance.",
       "highContrast": "Runtime brushes map to SystemColors WindowBrush, WindowTextBrush and HighlightBrush. Native behavior remains partially unverified.",
-      "verification": "Prototype review only. VERIFICATION.md: six implementation findings resolved; physical input/tray, compositor, high contrast, multiple DPI/monitors and Windows 10 remain verification items. Finish disposition: fix.",
-      "detector": "Web/CSS detector is not applicable to native WPF source. Sidecar previews are not the shipped interface."
+      "verification": "0.1.1:37 WPF in-process checks including caption commands, default grid no-overflow, icon layout, active-state feedback and simulated logical work-area fit. Physical multi-DPI/multi-monitor interaction, compositor, high contrast and Windows10 still pending. See VERIFICATION.md.",
+      "detector": "Web/CSS detector is not applicable to native WPF source. Sidecar previews are not the shipped interface.",
+      "layout": "Prototype 0.1.1: main max920x640 DIP, capped90%/88% of monitor work-area width/height;40-DIP caption row;154-DIP sidebar;36/64% library/editor split. Tray remains336x404. Small icon measure honors requested dimensions; grid names truncate to fit72-DIP tiles.",
+      "headerControls": "Installed Segoe MDL2 Assets Search E721, Pin E718, Close E8BB. Adapted SableLatch styling is borderless; active fill and Pinned title, distinct keyboard-focus underline. Windows font is not redistributed."
     }
   },
   "components": [
@@ -480,5 +482,6 @@
       "Don't present browser component previews as native WPF or compositor evidence.",
       "Don't describe the prototype or its lightweight performance goal as ship-validated."
     ]
-  }
+  },
+  "updatedAt": "2026-10-13"
 }

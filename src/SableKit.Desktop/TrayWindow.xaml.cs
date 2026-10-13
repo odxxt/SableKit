@@ -159,7 +159,7 @@ public partial class TrayWindow : Window
 
                 var column = new StackPanel(); column.Children.Add(new Icon { Kind = item.Icon, Width = 19, Height = 19, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 0, 0, 7) });
 
-                column.Children.Add(new TextBlock { Text = item.Running ? "Running…" : item.Name, FontSize = 11, FontWeight = FontWeights.SemiBold, TextWrapping = TextWrapping.Wrap, MaxHeight = 29 });
+                column.Children.Add(new TextBlock { Text = item.Running ? "Running…" : item.Name, FontSize = 11, FontWeight = FontWeights.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis });
 
                 column.Children.Add(Muted(item.Running ? "Running…" : item.ToolName, 10)); content.Children.Add(column);
 
@@ -212,9 +212,19 @@ public partial class TrayWindow : Window
 
     private void UpdateResult() { ActionsHeading.Visibility = Visibility.Hidden; ResultText.Text = state.Status; ResultText.SetResourceReference(TextBlock.ForegroundProperty, state.LastFailed ? "Bad" : "Muted"); ResultButton.ToolTip = state.Result; ResultButton.Visibility = Visibility.Visible; }
 
-    public void TogglePin(object? sender, RoutedEventArgs? e) { Pinned = !Pinned; Topmost = Pinned; PinButton.SetResourceReference(BackgroundProperty, Pinned ? "Hover" : "Surface"); PinButton.ToolTip = Pinned ? "Unpin · hide when focus moves away" : "Pin · keep panel open"; AutomationProperties.SetName(PinButton, Pinned ? "Unpin panel" : "Pin panel"); }
+    public void TogglePin(object? sender, RoutedEventArgs? e) { Pinned = !Pinned; Topmost = Pinned; if (Pinned) PinButton.SetResourceReference(BackgroundProperty, "Hover"); else PinButton.Background = Brushes.Transparent; PanelTitle.Text = Pinned ? "SableKit · Pinned" : "SableKit"; PinButton.ToolTip = Pinned ? "Unpin · hide when focus moves away" : "Pin · keep panel open"; AutomationProperties.SetName(PinButton, Pinned ? "Unpin panel" : "Pin panel"); }
 
-    private void ToggleSearch(object sender, RoutedEventArgs e) { SearchBox.Visibility = SearchBox.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible; SearchBox.Text = ""; if (SearchBox.IsVisible) SearchBox.Focus(); }
+    private void ToggleSearch(object sender, RoutedEventArgs e) => SetSearchVisible(SearchBox.Visibility != Visibility.Visible);
+
+    private void SetSearchVisible(bool visible)
+    {
+        SearchBox.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+        if (visible) SearchButton.SetResourceReference(BackgroundProperty, "Hover");
+        else { SearchButton.Background = Brushes.Transparent; SearchBox.Text = ""; }
+        SearchButton.ToolTip = visible ? "Close search (Esc)" : "Search actions (Ctrl+F)";
+        AutomationProperties.SetName(SearchButton, visible ? "Close search" : "Search actions");
+        if (visible) SearchBox.Focus(); else SearchButton.Focus();
+    }
 
     private void SearchChanged(object sender, TextChangedEventArgs e) { if (state is not null) RenderActions(); }
 
@@ -226,7 +236,14 @@ public partial class TrayWindow : Window
 
     private async void RunSuggestion(object sender, RoutedEventArgs e) { if (suggestionTarget is not null) await state.ExecuteAsync(new ActionItem(new ActionDefinition { Name = SuggestionTitle.Text, Kind = ActionKind.Network }), suggestionTarget.Display); }
 
-    private void DragHeader(object sender, MouseButtonEventArgs e) { if (e.OriginalSource is not Button && e.LeftButton == MouseButtonState.Pressed) try { DragMove(); } catch (InvalidOperationException) { } }
+    private void DragHeader(object sender, MouseButtonEventArgs e) { if (!e.Handled && e.LeftButton == MouseButtonState.Pressed && !IsControlSource(e.OriginalSource as DependencyObject)) try { DragMove(); } catch (InvalidOperationException) { } }
+
+    private static bool IsControlSource(DependencyObject? source)
+    {
+        for (var current = source; current is not null; current = VisualTreeHelper.GetParent(current))
+            if (current is System.Windows.Controls.Primitives.ButtonBase) return true;
+        return false;
+    }
 
     private void HideClick(object sender, RoutedEventArgs e) => Hide();
 
@@ -244,9 +261,9 @@ public partial class TrayWindow : Window
 
     {
 
-        if (e.Key == Key.Escape) { if (state.IsRunning) state.CancelAll(); else if (SearchBox.IsVisible) { SearchBox.Text = ""; SearchBox.Visibility = Visibility.Collapsed; SearchButton.Focus(); } else Hide(); e.Handled = true; }
+        if (e.Key == Key.Escape) { if (state.IsRunning) state.CancelAll(); else if (SearchBox.IsVisible) { SetSearchVisible(false); } else Hide(); e.Handled = true; }
 
-        if (e.Key == Key.F && Keyboard.Modifiers == ModifierKeys.Control) { ToggleSearch(this, e); e.Handled = true; }
+        if (e.Key == Key.F && Keyboard.Modifiers == ModifierKeys.Control) { SetSearchVisible(true); e.Handled = true; }
 
         var key = e.Key == Key.System ? e.SystemKey : e.Key;
 

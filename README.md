@@ -2,7 +2,7 @@
 
 A portable Windows toolkit built around tools, reusable actions, and profiles. Native C# / WPF / XAML on .NET 10.
 
-**Current status: working prototype 0.1.** The compact panel and configuration window execute real password, application-launch, and network operations. This is the first usable slice of the intended bundle; protected tools and workflows are still planned.
+**Current status: working prototype 0.1.1.** The compact panel and configuration window execute real password, application-launch, and network operations. This is the first usable slice of the intended bundle; protected tools and workflows are still planned.
 
 ## Run the portable build
 
@@ -11,6 +11,12 @@ A portable Windows toolkit built around tools, reusable actions, and profiles. N
 3. Open the quick panel from its tray icon or **Ctrl+Alt+K**. Use **Open app** for configuration. Right-click the tray icon and choose **Quit** to exit.
 
 Settings are stored in `SableKit-data/settings.json` beside the executable, with a backup on replacement. Ordinary tools require no vault setup. The binary is unsigned. Windows 10 and 11 are intended targets; this prototype has been exercised on Windows 11 build 26200, x64. A clean machine without .NET and Windows 10 remain to be tested.
+
+## UI fixes in 0.1.1
+
+Borderless SableLatch search/pin glyphs now show persistent active states. The compact tool strip and grid no longer clip their default contents. The main window fits its monitor work area and includes an explicit minimize/maximize/close bar.
+
+Quit the previous version before launching this build. When extracting to a new folder, copy your existing SableKit-data folder there before launch to retain settings.
 
 ## Working now
 
@@ -42,4 +48,4 @@ For the optional Windows UI harness, run the published executable with `--verify
 - `tests/SableKit.Tests`: meaningful core checks without external test packages.
 - [Product requirements](PRODUCT-REQUIREMENTS.md), [architecture](ARCHITECTURE.md), [milestones](MILESTONES.md), [verification](VERIFICATION.md), [design system](DESIGN.md).
 
-The new repository was inspected empty before the foundation was written. The owner subsequently approved direct implementation and a smoky charcoal visual direction. SableLatch was inspected as a UX reference; this prototype uses original code and vector icons.
+The new repository was inspected empty before the foundation was written. The owner subsequently approved direct implementation and a smoky charcoal visual direction. SableLatch was inspected as a UX reference; 0.1.1 adapts its borderless header styling and uses the same Windows search/pin glyphs. See THIRD-PARTY-NOTICES.txt and SABLELATCH-NOTICE.txt. Other vector icons are original.

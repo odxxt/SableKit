@@ -26,11 +26,21 @@ internal static class Verification
             Check(tray.Width == 336 && tray.Height == 404, "Compact dimensions 336x404 DIP");
             Check(tray.Suggestion.Visibility == Visibility.Visible, "Clipboard TCP suggestion detected");
             tray.PinButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); Check(tray.Pinned && tray.Topmost, "Pin toggles retained panel state");
+            Check(tray.PanelTitle.Text.Contains("Pinned") && tray.PinButton.BorderThickness == new Thickness(0), "Pinned state is explicit without a control border");
             Capture(tray, output, "tray-list.png");
+            tray.TogglePin(null, null); await Settle(); Capture(tray, output, "tray-unpinned.png");
+            Check(!tray.Pinned && !tray.PanelTitle.Text.Contains("Pinned"), "Unpin clears the retained state"); tray.TogglePin(null, null);
+            var dpi = VisualTreeHelper.GetDpi(tray);
+            var clippedIcons = Descendants<Icon>(tray).Where(i => i.IsVisible && (Math.Abs(i.RenderSize.Width - i.Width) > 1 / dpi.DpiScaleX || Math.Abs(i.RenderSize.Height - i.Height) > 1 / dpi.DpiScaleY)).Select(i => $"{i.Kind}: {i.Width}x{i.Height} -> {i.RenderSize}").ToArray();
+            Check(clippedIcons.Length == 0, "Small icon layout matches requested dimensions within pixel rounding: " + string.Join(", ", clippedIcons));
             tray.SearchButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); tray.SearchBox.Text = "random"; Check(tray.ActionsList.Items.Count == 1, "Search resolves aliases");
+            await Settle(); Capture(tray, output, "tray-search.png");
+            Check(Equals(tray.SearchButton.Background, tray.FindResource("Hover")), "Search remains visibly active while editing");
             tray.SearchBox.Text = "no-such-action"; Check(tray.EmptyText.Visibility == Visibility.Visible, "Search empty state");
             tray.SearchButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             tray.ToggleView(null, null); await Settle(); Capture(tray, output, "tray-grid.png"); Check(state.Config.ActiveProfile.GridView, "Grid preference persisted");
+            var actionsScroll = Descendants<ScrollViewer>(tray).Single(s => s.Content is StackPanel panel && panel.Children.Contains(tray.ActionsList));
+            Check(actionsScroll.ScrollableHeight < 1, "Default grid tiles fit without clipping or scrolling");
             tray.ToggleView(null, null);
             tray.ProfilePicker.SelectedItem = state.Config.Profiles[1]; Check(state.Config.ActiveProfileId == "lab" && tray.ActionsList.Items.Count == 2, "Profile switch changes pinned references");
             tray.ProfilePicker.SelectedItem = state.Config.Profiles[0];
@@ -52,7 +62,16 @@ internal static class Verification
             Clipboard.SetText("192.0.2.10"); Check(net.Target.Text == $"127.0.0.1:{port}", "Later clipboard changes do not replace visible target");
             Capture(net, output, "network.png");
             net.Target.Text = "127.0.0.1:99999"; await net.Run(false); Check(net.Summary.Text.Contains("65535"), "Invalid explicit port blocks execution");
-            main = new MainWindow(state); main.Show(); await Settle(); Capture(main, output, "main-actions.png");
+            main = new MainWindow(state); main.Show(); await Settle();
+            var workArea = NativeWindow.WorkArea(main);
+            Check(workArea.Contains(new Rect(main.Left, main.Top, main.ActualWidth, main.ActualHeight)), "Main window opens inside the monitor work area");
+            Check(main.CloseButton.IsVisible && main.MinimizeButton.IsVisible && main.MaximizeButton.IsVisible, "Main window exposes caption controls");
+            main.MinimizeButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); await Settle();
+            Check(main.WindowState == WindowState.Minimized, "Caption minimize works");
+            main.WindowState = WindowState.Normal; main.Activate();
+            main.MaximizeButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); await Settle(); Check(main.WindowState == WindowState.Maximized, "Caption maximize works");
+            main.MaximizeButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); await Settle(); Check(main.WindowState == WindowState.Normal, "Caption restore works");
+            Capture(main, output, "main-actions.png");
             var library = Descendants<ListBox>(main).Single();
             var originalId = main.EditingActionId;
             var nameField = Descendants<TextBox>(main).Single(t => System.Windows.Automation.AutomationProperties.GetName(t) == "Name");
@@ -76,9 +95,16 @@ internal static class Verification
             main.DiscardDecision = () => true;
             main.Navigate("Profiles"); await Settle(); Capture(main, output, "main-profiles.png");
             main.Navigate("Preferences"); await Settle(); Capture(main, output, "main-preferences.png");
-            main.Navigate("Actions"); main.Width = 900; main.Height = 610; await Settle(); Capture(main, output, "main-minimum.png");
+            main.Navigate("Actions"); main.Width = 720; main.Height = 480; await Settle(); Capture(main, output, "main-minimum.png");
+            foreach (var area in new[] { new Rect(0, 0, 853, 480), new Rect(-1024, 0, 1024, 700), new Rect(0, 0, 1920, 1040) })
+            {
+                main.FitToWorkArea(area); await Settle();
+                Check(area.Contains(new Rect(main.Left, main.Top, main.ActualWidth, main.ActualHeight)), $"Main window fits logical work area {area.Width}x{area.Height}");
+                if (area.Width == 853) Capture(main, output, "main-scaled-screen.png");
+            }
+            main.FitToWorkArea(workArea); main.Width = 720; main.Height = 480; await Settle();
             ThemeManager.Apply("Light"); await Settle(); Capture(main, output, "main-light.png"); Capture(tray, output, "tray-light.png"); ThemeManager.Apply("Dark");
-            main.Close(); main = null; net.Close(); net = null; tray.Hide();
+            main.CloseButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); Check(!main.IsVisible, "Caption close works"); main = null; net.Close(); net = null; tray.Hide();
             var timings = new List<double>(); for (var i = 0; i < 10; i++) { watch.Restart(); tray.Open(false); await Settle(); timings.Add(watch.Elapsed.TotalMilliseconds); tray.Hide(); }
             using var process = Process.GetCurrentProcess(); var cpuStart = process.TotalProcessorTime; var idleClock = Stopwatch.StartNew(); await Task.Delay(3000); process.Refresh();
             var measurement = new { FirstPanelMilliseconds = firstPanelMs, WarmPanelMilliseconds = timings, WorkingSetBytes = process.WorkingSet64, PrivateBytes = process.PrivateMemorySize64, IdleCpuCorePercent = (process.TotalProcessorTime - cpuStart).TotalMilliseconds / idleClock.Elapsed.TotalMilliseconds * 100, Caveat = "Debug/verification process after rendering multiple windows; not a clean-start or release idle baseline. RenderTargetBitmap captures WPF client content, not DWM acrylic." };

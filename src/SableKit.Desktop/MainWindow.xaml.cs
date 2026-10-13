@@ -12,7 +12,14 @@ public partial class MainWindow : Window
     public MainWindow(AppState state)
     {
         InitializeComponent(); this.state = state;
-        SourceInitialized += (_, _) => NativeWindow.Apply(this, false);
+        SourceInitialized += (_, _) => { NativeWindow.Apply(this, false); FitToWorkArea(NativeWindow.WorkArea(this)); };
+        StateChanged += (_, _) =>
+        {
+            var maximized = WindowState == WindowState.Maximized;
+            MaximizeButton.Content = maximized ? "\uE923" : "\uE922";
+            MaximizeButton.ToolTip = maximized ? "Restore" : "Maximize";
+            System.Windows.Automation.AutomationProperties.SetName(MaximizeButton, maximized ? "Restore window" : "Maximize window");
+        };
         Closing += (_, e) => { if (dirty && !ConfirmDiscard()) e.Cancel = true; };
         state.ResultChanged += StateResultChanged;
         Closed += (_, _) => state.ResultChanged -= StateResultChanged;
@@ -24,6 +31,22 @@ public partial class MainWindow : Window
         }
         Navigate("Actions");
     }
+    internal void FitToWorkArea(Rect area)
+    {
+        var width = Math.Min(920, area.Width * 0.90);
+        var height = Math.Min(640, area.Height * 0.88);
+        MinWidth = Math.Min(720, width); MinHeight = Math.Min(440, height);
+        Width = width; Height = height;
+        Left = area.Left + (area.Width - Width) / 2;
+        Top = area.Top + (area.Height - Height) / 2;
+    }
+    private void MinimizeWindow(object sender, RoutedEventArgs e) => SystemCommands.MinimizeWindow(this);
+    private void MaximizeWindow(object sender, RoutedEventArgs e)
+    {
+        if (WindowState == WindowState.Maximized) SystemCommands.RestoreWindow(this);
+        else SystemCommands.MaximizeWindow(this);
+    }
+    private void CloseWindow(object sender, RoutedEventArgs e) => Close();
     private void StateResultChanged() { StatusText.Text = state.Status; if (page == "Activity") ShowActivity(); }
     private bool ConfirmDiscard() => !dirty || (DiscardDecision?.Invoke() ?? (MessageBox.Show(this, "Discard the changes in this editor?", "Unsaved changes", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes));
     public void Navigate(string destination)
@@ -38,8 +61,8 @@ public partial class MainWindow : Window
     }
     private void ShowActions()
     {
-        var layout = new Grid(); layout.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(250) }); layout.ColumnDefinitions.Add(new ColumnDefinition());
-        var left = new DockPanel { Margin = new Thickness(0, 0, 22, 0) };
+        var layout = new Grid(); layout.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(0.36, GridUnitType.Star) }); layout.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(0.64, GridUnitType.Star) });
+        var left = new DockPanel { Margin = new Thickness(0, 0, 16, 0) };
         var search = new TextBox { Tag = "Search actions", ToolTip = "Search action names and aliases", Margin = new Thickness(0, 0, 0, 12) }; System.Windows.Automation.AutomationProperties.SetName(search, "Search action library"); DockPanel.SetDock(search, Dock.Top); left.Children.Add(search);
         var synchronizingSelection = false;
         var list = new ListBox { Name = "ActionLibrary" }; left.Children.Add(list); layout.Children.Add(left);
@@ -85,7 +108,7 @@ public partial class MainWindow : Window
     {
         selectedId = source.Id;
         var outer = new DockPanel();
-        var bottom = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 16, 0, 0) }; DockPanel.SetDock(bottom, Dock.Bottom); outer.Children.Add(bottom);
+        var bottom = new WrapPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 16, 0, 0) }; DockPanel.SetDock(bottom, Dock.Bottom); outer.Children.Add(bottom);
         var form = new StackPanel(); outer.Children.Add(Ui.Scroll(form));
         form.Children.Add(new TextBlock { Text = "Configure action", FontSize = 18, FontWeight = FontWeights.SemiBold });
         var name = Ui.Field(form, "Name", source.Name);
@@ -169,7 +192,7 @@ public partial class MainWindow : Window
     private void AddAction(object sender, RoutedEventArgs e) { if (!ConfirmDiscard()) return; PageContent.Content = BuildEditor(new ActionDefinition { Name = "New action" }); dirty = true; }
     private void ShowProfiles()
     {
-        var form = new StackPanel { Width = 590, HorizontalAlignment = HorizontalAlignment.Left };
+        var form = new StackPanel { MaxWidth = 590, HorizontalAlignment = HorizontalAlignment.Stretch };
         var current = Ui.Choice(form, "Profile", state.Config.Profiles.Cast<object>(), state.Config.ActiveProfile);
         current.SelectionChanged += (_, _) => { if (current.SelectedItem is Profile p) { state.Config.ActiveProfileId = p.Id; SaveSettings(); ShowProfiles(); } };
         var name = Ui.Field(form, "Profile name", state.Config.ActiveProfile.Name);

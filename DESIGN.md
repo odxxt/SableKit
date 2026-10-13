@@ -27,7 +27,7 @@ colors:
 typography:
   headline:
     fontFamily: "Segoe UI"
-    fontSize: "28 DIP"
+    fontSize: "24 DIP"
     fontWeight: 600
   title:
     fontFamily: "Segoe UI"
@@ -92,7 +92,7 @@ components:
     backgroundColor: "transparent"
     textColor: "{colors.text}"
     rounded: "{rounded.control}"
-    padding: "6 DIP"
+    padding: "0 DIP"
     width: "30 DIP"
     height: "30 DIP"
   input:
@@ -145,7 +145,7 @@ Source of truth: `src/SableKit.Desktop/ThemeManager.cs`, `Theme.xaml`, `Ui.cs`, 
 
 All layout and type measurements here are **WPF device-independent pixels (DIP, 1/96 inch)**. They are not CSS runtime values. Frontmatter padding lists top/right/bottom/left in that order; WPF Thickness constructors use left/top/right/bottom. The sidecar's browser samples translate these measurements to CSS pixels for illustration only.
 
-Verification status: VERIFICATION.md records the Release build/publish, 32 core checks, 23 in-process WPF checks and ten inspected client-content renders. Six implementation findings were resolved. Physical input/tray, compositor material, high contrast, multiple DPI/monitors and Windows 10 remain partially or wholly unverified. Finish disposition remains **fix**; this is a reviewable prototype.
+The 0.1.1 WPF verification harness passed 37 checks and produced 13 client-content captures. This evidence does not validate physical input, compositor blur, live DPI/monitor changes, high contrast, or Windows 10.
 
 ## Colors
 
@@ -185,9 +185,9 @@ Compact names and metadata trim with ellipses; explanatory form copy and result 
 
 ## Layout
 
-The quick panel is fixed at 336 × 404 DIP. Its outer border has one-DIP stroke and 15/10/15/12 DIP left/top/right/bottom padding. The header has a fixed 34-DIP row, search and suggestion rows are conditional, and the action area scrolls above the tool strip and footer. Pinned actions render as a list or a two-column grid; searching switches to a list.
+The quick panel is fixed at 336 × 404 DIP. Its outer border has one-DIP stroke and 15/12/15/12 DIP left/top/right/bottom padding. The header has a fixed 32-DIP row, search and suggestion rows are conditional, and the action area scrolls above the tool strip and footer. Pinned actions render as a list or a two-column grid; searching switches to a list.
 
-The main window starts at 1080 × 720 DIP and permits resizing down to 900 × 610. Its sidebar is 190 DIP wide. Content has 30/26/30/22 DIP margins. The Actions page allocates 250 DIP to the library column with a 22-DIP trailing gap, leaving the editor flexible. Editor fields scroll while action buttons remain docked below. Profiles currently use a 590-DIP form; Preferences caps its form at 540 DIP.
+The main window opens at up to 920 × 640 DIP, capped to 90% of its monitor work-area width and 88% of its height. Minimum sizes relax to fit a smaller work area. Its 40-DIP draggable title bar always exposes minimize, maximize/restore and close. The sidebar is 154 DIP wide with scrolling navigation; content margins are 20/18/20/16 DIP. Actions allocates 36% to the library (including a 16-DIP gap) and 64% to the editor. Fields scroll and editor commands wrap below them. Profiles caps its flexible form at 590 DIP; Preferences caps at 540 DIP.
 
 SableNet starts at 510 × 560 DIP, with a 430 × 480 minimum and a 24-DIP content inset. Its result field absorbs remaining height. Action rows use wrapping containers where implemented.
 
@@ -207,13 +207,15 @@ The only custom visible feedback animation is a 140-ms opacity change from 0.65 
 
 Controls, navigation items, action tiles, fields and the configuration preview share the control radius. The compact panel uses separate outer-border and window-chrome radii recorded above. Dropdown items and scrollbar thumbs use smaller radii. Thin strokes define fields and secondary actions; primary actions rely on filled contrast.
 
-Icons are original WPF Geometry paths on a 24-unit coordinate system with a 1.45-unit stroke, rounded caps and joins, scaled to the control's displayed size. Typical sizes range from 14 to 19 DIP. No shipping raster asset is used by this prototype.
+Header/caption icons use the installed Segoe MDL2 Assets font (matching SableLatch); no font files are redistributed. Other icons are original WPF Geometry paths on a 24-unit coordinate system with a 1.45-unit stroke, rounded caps and joins, scaled to the control's displayed size. Typical sizes range from 14 to 19 DIP. No shipping raster asset is used by this prototype.
 
 ## Components
 
 ### Buttons
 
-Primary buttons are semibold, use accent fill and its paired foreground, then use Hover/Text on hover. Filled buttons use Inset with a Border stroke; ghost buttons begin transparent. The common minimum height is 32 DIP, with the 30-DIP icon control as an explicit compact exception. New action uses 18/10 horizontal/vertical padding.
+Primary buttons are semibold, use accent fill and its paired foreground, then use Hover/Text on hover. Filled buttons use Inset with a Border stroke; ghost buttons begin transparent. The common minimum height is 32 DIP, with a zero-padding 30-DIP icon control as an explicit compact exception. New action uses 18/10 horizontal/vertical padding.
+
+Header controls use the same installed Segoe MDL2 Assets glyphs as SableLatch: Search E721, Pin E718 and Close E8BB. Their adapted styling has no border. Active search/pin uses a persistent Hover fill; pinned state also adds “Pinned” to the panel title. Keyboard focus uses a short underline and brighter glyph, distinct from the active fill. Caption buttons use the same treatment. Other buttons follow the common styles below.
 
 Pressed chrome uses 0.72 opacity. Disabled buttons use 0.45 opacity. Keyboard focus changes the border to Text; the Focus style also supplies a one-DIP outline with a two-DIP inset. These are WPF state triggers, not CSS transitions.
 
@@ -229,7 +231,7 @@ Main navigation combines a line icon and body text, with the selected destinatio
 
 ### Action list and grid
 
-A list action holds an icon, semibold name, metadata and an Alt-number hint for the first nine visible actions. Grid actions show icon, wrapped name and tool metadata. Their distinct fixed heights are in the frontmatter.
+A list action holds an icon, semibold name, metadata and an Alt-number hint for the first nine visible actions. Grid actions show icon, a single-line ellipsized name and tool metadata. Tooltips retain the full name. Their distinct fixed heights are in the frontmatter.
 
 **The Stable Feedback Rule.** Running and Copied feedback retain the action's dimensions and preserve keyboard focus across updates.
 

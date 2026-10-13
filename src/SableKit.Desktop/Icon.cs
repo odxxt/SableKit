@@ -30,7 +30,7 @@ public sealed class Icon : FrameworkElement
         ["copy"] = Geometry.Parse("M8,8 L20,8 L20,21 L8,21 Z M16,8 L16,3 L3,3 L3,16 L8,16")
     };
     static Icon() { foreach (var geometry in Shapes.Values) geometry.Freeze(); }
-    protected override Size MeasureOverride(Size availableSize) => new(18, 18);
+    protected override Size MeasureOverride(Size availableSize) => new(double.IsNaN(Width) ? 18 : Width, double.IsNaN(Height) ? 18 : Height);
     protected override void OnRender(DrawingContext dc)
     {
         var pen = new Pen(Stroke, 1.45) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round, LineJoin = PenLineJoin.Round };

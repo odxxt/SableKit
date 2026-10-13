@@ -38,7 +38,7 @@ public partial class App : Application
         try
         {
             var store = new ConfigurationStore(Path.Combine(dataFolder, "settings.json"));
-            var config = store.Load(); store.Save(config);
+            var config = verification ? Configuration.CreateDefault() : store.Load(); store.Save(config);
             State = new AppState(store, config); ThemeManager.Apply(config.Theme);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Text.Json.JsonException)

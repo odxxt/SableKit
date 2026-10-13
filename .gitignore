@@ -4,4 +4,5 @@ artifacts/
 SableKit-data/
 .vs/
 .impeccable/review/
+.impeccable/review-*/
 *.user
