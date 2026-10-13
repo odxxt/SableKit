@@ -26,7 +26,7 @@ internal static class Verification
             Check(tray.Width == 336 && tray.Height == 404, "Compact dimensions 336x404 DIP");
             Check(tray.Suggestion.Visibility == Visibility.Visible, "Clipboard TCP suggestion detected");
             tray.PinButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); Check(tray.Pinned && tray.Topmost, "Pin toggles retained panel state");
-            Check(tray.PanelTitle.Text.Contains("Pinned") && tray.PinButton.BorderThickness == new Thickness(0), "Pinned state is explicit without a control border");
+            Check(tray.PanelTitle.Text == "SableKit" && tray.PinButton.BorderThickness == new Thickness(0), "Pin uses fill without a label or border");
             Capture(tray, output, "tray-list.png");
             tray.TogglePin(null, null); await Settle(); Capture(tray, output, "tray-unpinned.png");
             Check(!tray.Pinned && !tray.PanelTitle.Text.Contains("Pinned"), "Unpin clears the retained state"); tray.TogglePin(null, null);
@@ -42,8 +42,16 @@ internal static class Verification
             var actionsScroll = Descendants<ScrollViewer>(tray).Single(s => s.Content is StackPanel panel && panel.Children.Contains(tray.ActionsList));
             Check(actionsScroll.ScrollableHeight < 1, "Default grid tiles fit without clipping or scrolling");
             tray.ToggleView(null, null);
-            tray.ProfilePicker.SelectedItem = state.Config.Profiles[1]; Check(state.Config.ActiveProfileId == "lab" && tray.ActionsList.Items.Count == 2, "Profile switch changes pinned references");
-            tray.ProfilePicker.SelectedItem = state.Config.Profiles[0];
+            tray.CycleProfile(1); Check(state.Config.ActiveProfileId == "lab" && tray.ActionsList.Items.Count == 2, "Profile switch changes pinned references");
+            tray.CycleProfile(-1);
+            if (!ClipboardReader.OpenClipboard(IntPtr.Zero)) throw new InvalidOperationException("Could not hold clipboard for contention test");
+            var busyClock=Stopwatch.StartNew();
+            try
+            {
+                try { await AppState.ReadClipboardAsync(); throw new InvalidOperationException("Busy clipboard was read"); }
+                catch(System.Runtime.InteropServices.COMException) { Check(busyClock.ElapsedMilliseconds<750, "Busy clipboard read returns promptly without blocking the panel"); }
+            }
+            finally { ClipboardReader.CloseClipboard(); }
             var password = state.Items.First(i => i.Definition.Kind == ActionKind.Password);
             tray.Activate(); ((Button)tray.ActionsList.Items[0]).Focus();
             var copy = state.ExecuteAsync(password); await Task.Delay(80);
@@ -56,12 +64,52 @@ internal static class Verification
             var accept = listener.AcceptTcpClientAsync();
             var check = await NetworkChecks.RunAsync(new NetworkTarget("127.0.0.1", port), CancellationToken.None); using var client = await accept;
             Check(check.Success, "Real local TCP connectivity");
-            net = new NetworkWindow(false); net.Target.Text = $"127.0.0.1:{port}"; net.Show();
-            var accept2 = listener.AcceptTcpClientAsync(); await net.Run(false); using var client2 = await accept2;
-            Check(net.Summary.Text == "TCP connection accepted", "Network window displays real result");
-            Clipboard.SetText("192.0.2.10"); Check(net.Target.Text == $"127.0.0.1:{port}", "Later clipboard changes do not replace visible target");
+            net = new NetworkWindow(false) { VerificationMode = true }; net.Target.Text = $"127.0.0.1:{port}"; net.Show();
+            var accept2 = listener.AcceptTcpClientAsync(); await net.Run(false); using var client2 = await accept2.WaitAsync(TimeSpan.FromSeconds(5));
+            Check(net.Results.Text.Contains("TcpTestSucceeded") && net.Results.Text.Contains("True"), "Network window displays native Test-NetConnection output");
+            Clipboard.SetText("192.0.2.10"); Check(net.Target.Text == "127.0.0.1" && net.Port.Text == port.ToString(), "Later clipboard changes do not replace visible target");
             Capture(net, output, "network.png");
             net.Target.Text = "127.0.0.1:99999"; await net.Run(false); Check(net.Summary.Text.Contains("65535"), "Invalid explicit port blocks execution");
+            var rdp = net.Ports.Children.Cast<Button>().Single(b => b.Content?.ToString() == "RDP");
+            net.Target.Text = "127.0.0.1"; rdp.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Check(net.Port.Text == "3389" && net.Results.Text.Length == 0, "Port preset populates without executing"); Capture(net, output, "network-preset.png");
+            Clipboard.SetText("https://example.com/path"); net.LoadClipboard(); await Settle();
+            Check(net.Target.Text == "example.com" && net.Port.Text.Length == 0, "Clipboard URL fills host without an implicit port");
+            net.SetCandidates(ClipboardTargets.Extract("10.0.0.1 and 10.0.0.2 port 443"));
+            Check(net.Candidates.Visibility == Visibility.Visible && net.Candidates.SelectedIndex == -1, "Multiple targets require a choice"); Capture(net, output, "network-picker.png");
+            net.Candidates.SelectedIndex=1;
+            Check(net.Target.Text=="10.0.0.2" && net.Port.Text=="443", "Choosing a detected address fills its associated port");
+            var ping = await NetworkCommand.Run(new NetworkTarget("127.0.0.1", null), CancellationToken.None);
+            Check(ping.Success && ping.Detail.Contains("127.0.0.1"), "Native ping output is returned");
+            using (var stop = new CancellationTokenSource(150))
+            {
+                try { await NetworkCommand.Run(new NetworkTarget("127.0.0.1", null), stop.Token); throw new InvalidOperationException("Native cancellation ignored"); }
+                catch (OperationCanceledException) { Check(true, "Native command cancellation stops execution"); }
+            }
+            var quick = new ActionItem(new ActionDefinition { Name = "Ping clipboard", Kind = ActionKind.Network });
+            await state.ExecuteAsync(quick, "127.0.0.1");
+            Check(tray.ResultRegion.Visibility == Visibility.Visible && tray.ResultOutput.Text == state.Result && tray.ActionsHeading.Text == "Pinned actions", "Quick output stays in panel without replacing the heading");
+            Capture(tray, output, "tray-result.png");
+            net.SetTarget(state.LastNetworkTarget!, state.Result);
+            Check(net.Results.Text == state.Result && net.Target.Text == "127.0.0.1", "Opening the tool transfers the same output and target"); Check(net.Candidates.Visibility==Visibility.Collapsed, "Explicit result handoff clears old target choices");
+            Capture(net, output, "network-ping.png");
+            foreach(var field in new[] { net.Results, tray.ResultOutput })
+            {
+                field.UpdateLayout(); var scroll=Descendants<ScrollViewer>(field).Single();
+                var bar=Descendants<System.Windows.Controls.Primitives.ScrollBar>(field).Single(b=>b.Orientation==Orientation.Horizontal);
+                Check(bar.ActualWidth>200 && Math.Abs(bar.ActualHeight-10)<=1, $"Native output horizontal scrollbar spans the output pane ({bar.ActualWidth:0.#}x{bar.ActualHeight:0.#})");
+                scroll.ScrollToRightEnd(); await Settle();
+                Check(scroll.HorizontalOffset>0, "Long native output scrolls horizontally"); scroll.ScrollToLeftEnd();
+            }
+            tray.Left = 60; tray.Top = 70; tray.SavePosition(); tray.Hide(); tray.Open();
+            Check(tray.Left == 60 && tray.Top == 70, "Reopening preserves moved position");
+            tray.ToggleFromTray(); Check(!tray.IsVisible, "Tray click hides a pinned panel");
+            tray.ToggleFromTray(); Check(tray.IsVisible && tray.Left == 60, "Next tray click reopens in place");
+            tray.TogglePin(null, null); tray.VerificationMode = false; tray.HandleDeactivated(true); tray.ToggleFromTray();
+            Check(!tray.IsVisible, "Tray focus-loss does not reopen the panel on the same click");
+            tray.VerificationMode = true; tray.Open(); tray.ResetPosition();
+            Check(Math.Abs(tray.Left - (SystemParameters.WorkArea.Right - tray.Width - 18)) < 1 && Math.Abs(tray.Top - (SystemParameters.WorkArea.Bottom - tray.Height - 18)) < 1, "Title reset returns to bottom right");
+            tray.CycleProfile(1); tray.CycleProfile(-1); Check(tray.ProfileName.Text == "Default", "Profile carousel cycles both directions");
             main = new MainWindow(state); main.Show(); await Settle();
             var workArea = NativeWindow.WorkArea(main);
             Check(workArea.Contains(new Rect(main.Left, main.Top, main.ActualWidth, main.ActualHeight)), "Main window opens inside the monitor work area");

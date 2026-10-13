@@ -1,3 +1,46 @@
+# Verification - prototype 0.1.2 compact interaction update
+
+Recorded 2026-10-13 on Windows 11 build 26200, SDK 10.0.401 / runtime 10.0.12. Release WPF build and self-contained x64 publish passed.
+
+## Passed
+
+The 56-check UI run below preceded the final asynchronous clipboard-read change. Its full rerun stopped before modifying the clipboard because Windows returned access denied (Win32 error 5), both inside and outside the sandbox. The final code builds and its opening/idle timing probe passes under that unavailable-clipboard condition; successful clipboard extraction through the new reader still needs a rerun with clipboard access restored. The harness preserves the original clipboard before tests and aborts if it cannot do so.
+
+- **46 core checks**, including URL/address extraction, nearby common/labeled ports, invalid explicit ports, multiple targets, duplicate candidates, oversized input, and the existing settings/password/network checks.
+- **56 in-process WPF checks**: compact dimensions, stable pin/search states without a title suffix, search/grid/profiles, actual clipboard copy and stable feedback/focus, native loopback ping and Test-NetConnection output, cancellation, port presets that only populate, multiple-target selection, result handoff and picker cleanup, horizontal result scrolling, saved panel position and tray-toggle event sequence, bottom-right reset, main caption/bounds and unsaved-draft protection.
+- **17 client-content captures** across dark/light tray list/grid/search/Copied/results, compact network checks/presets/picker/output, main pages and small/simulated work areas.
+- Independent Impeccable review disposition **ship**, at the scope of its two listed fixes: output scrolling and target-picker clarity/cleanup. Both were scored resolved. This is not full product or native-compositor approval.
+
+The harness raises routed events and calls real controls, clipboard and local network processes. It exercises the tray-toggle sequence in process, not by physically clicking the Windows notification icon. Captures use RenderTargetBitmap and do not show DWM blur. Work-area simulation does not validate live monitor or DPI transitions.
+
+## Native network output
+
+The UI captures Windows [ping](https://learn.microsoft.com/en-gb/windows-server/administration/windows-commands/ping), [Test-NetConnection](https://learn.microsoft.com/en-us/powershell/module/nettcpip/test-netconnection?view=windowsserver2025-ps), and nslookup rather than synthesizing their output. The TCP test uses a fixed PowerShell script; validated host/port cross as environment data. Ping/nslookup use literal process arguments. Commands have a 45-second bound and can be cancelled. Test-NetConnection may take several seconds and indicates TCP reachability, not application-service health.
+
+An invalid explicit colon port stays an error. An out-of-range loose prose port is ignored; an unlabeled nearby number is inferred only when it uniquely matches a common-port list. These are bounded heuristics, not arbitrary natural-language understanding. URLs without an explicit port suggest ping. Public DNS/unreachable networks, non-English command-output encoding, and broad hostname/IPv6 prose cases need further coverage.
+
+## Opening and idle measurements
+
+The first short run measured warm opening at 2.7-7.6 ms. A later run exposed a repeatable 1.07-second delay in synchronous clipboard access while Windows denied access. Stage timing isolated that delay to the clipboard read, not search or action layout. The final reader runs off the UI thread, returns a busy state within 250 ms, allows at most one outstanding read, and ignores stale results after another request or manual target edit.
+
+The final Release process, with the clipboard still unavailable, recorded:
+
+| Measurement | Final local run |
+|---|---:|
+| Process start to UI idle | 2,235 ms |
+| Warm open to UI idle | 2.9-4.7 ms |
+| Visible working set / private bytes | 158.1 / 85.1 MiB |
+| Hidden working set / private bytes | 157.4 / 84.0 MiB |
+| Visible / hidden CPU, one logical core | 0% / 0% |
+
+Each CPU sample lasted five seconds. These are single local diagnostic samples with another SableKit version running, not latency guarantees, display-present timestamps, or a clean-machine benchmark. The package size includes the runtime and is separate from memory/CPU use. Full successful-clipboard timing and broader performance targets remain to be established.
+
+## Remaining validation
+
+Physical tray clicks/drag/double-click, full keyboard and screen-reader use, live monitor/DPI changes, compositor blur, high contrast, Windows 10, and a clean machine without .NET remain unverified. The user already has a 0.1.1 process running during this session; it was not terminated or replaced. Quit it before launching the new build. Protected tools, workflows and the rest of the intended bundle remain planned as listed in IMPLEMENTATION-STATUS.md.
+
+---
+
 # Verification — prototype 0.1.1 UI fixes
 
 Recorded 2026-10-13. Release build/publish passed on Windows 11 build 26200 with SDK 10.0.401 / runtime 10.0.12. The WPF harness passed **37 checks**, including the existing action/clipboard/network/draft checks and these UI regressions:

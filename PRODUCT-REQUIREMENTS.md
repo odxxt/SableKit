@@ -158,3 +158,12 @@ Expansion tools, not confirmed initial-bundle commitments:
 Inspect the new repository before assuming implementation. Document requirements, architecture, milestones, and actual status. After design agreement, deliver a working tray prototype demonstrating opening, pinning, search, list/grid, profile switching, real action execution, and results. Build the default bundle incrementally without silently substituting mocks.
 
 Open decisions include current appearance/reference images; dimensions and density; control-library evaluation; pin/action-policy precedence; precise Windows support matrix; addon trust/process isolation; security environment binding and recovery protocol; alternative typing-engine feasibility; and performance budgets. These require focused review at their implementation stages, not speculative UI choices now.
+
+
+## Approved compact interaction refinements (2026-10-13)
+
+Preserve moved tray position across reopening and persist it; double-click the brand to reset bottom-right like SableLatch. Tray clicks toggle visibility even when pinned. Use its installed Windows icon family and borderless active-fill header treatment without a Pinned suffix, underline, or gray outer window stroke. Keep the existing main window within the monitor work area.
+
+The compact footer switches profiles horizontally with arrows and mouse wheel. Show quick-action output in the compact panel first, then explicitly open its owning tool with the same result. Keep the saved-action heading stable.
+
+SableNet should be a compact panel with address followed by a separate optional port field. Presets fill the field without running. The primary check action belongs at the bottom and Enter invokes it. Show actual Windows ping and Test-NetConnection output. Inspect copied IPs, hostnames and websites on opening; once visible, retain the edited target until Paste is explicitly used. Infer a nearby common port in prose, or an explicitly labeled valid port, and ignore out-of-range loosely associated numbers. An invalid colon-delimited port remains a correction error. Multiple detected targets require a choice. Clipboard suggestions remain click-to-run.

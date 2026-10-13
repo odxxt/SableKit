@@ -51,12 +51,17 @@ typography:
     fontWeight: 400
   result:
     fontFamily: "Consolas"
-    fontSize: "12 DIP"
+    fontSize: "11 DIP"
+    fontWeight: 400
+  quick-result:
+    fontFamily: "Consolas"
+    fontSize: "10 DIP"
     fontWeight: 400
 rounded:
   control: "12 DIP"
-  panel: "15 DIP"
-  window-chrome: "16 DIP"
+  panel: "20 DIP"
+  window-chrome: "20 DIP"
+  header-control: "8 DIP"
   choice-item: "5 DIP"
   scrollbar-thumb: "3 DIP"
 spacing:
@@ -95,6 +100,21 @@ components:
     padding: "0 DIP"
     width: "30 DIP"
     height: "30 DIP"
+  button-header:
+    backgroundColor: "transparent"
+    textColor: "{colors.muted}"
+    rounded: "{rounded.header-control}"
+    padding: "0 DIP"
+    width: "28 DIP"
+    height: "28 DIP"
+  button-header-active:
+    backgroundColor: "{colors.hover}"
+    textColor: "{colors.muted}"
+    rounded: "{rounded.header-control}"
+  compact-panel:
+    backgroundColor: "{colors.panel-surface}"
+    rounded: "{rounded.panel}"
+    padding: "12 DIP 14 DIP 14 DIP 14 DIP"
   input:
     backgroundColor: "{colors.inset}"
     textColor: "{colors.text}"
@@ -132,20 +152,20 @@ components:
 
 SableKit uses the owner's chosen smoky black, neutral charcoal and white direction for a modern, enterprise-quality desktop utility. Subtle Raycast influence and the compact pin/search/click-to-act familiarity of SableLatch inform the implementation. Native Segoe UI, quiet metadata, thin outlines and restrained rounded controls keep actions readable.
 
-This is an extraction of prototype 0.1, implemented directly in WPF without an approved image composition. It records the current code, not a new branding commitment. Tonal layering supplies the dependable structure; native Windows material is an enhancement whose compositor appearance still needs validation.
+This is an extraction of prototype 0.1.2, implemented directly in WPF with the owner's approved SableLatch-style native icons and compact header behavior. It records the current code, not a new branding commitment. Tonal layering supplies the dependable structure; native Windows material is an enhancement whose compositor appearance still needs validation.
 
 **Key Characteristics:**
 
 - Compact controls with clear action labels and quieter supporting text.
 - Charcoal and white emphasis, with semantic status resources.
-- Original line geometry and native Windows typography.
+- Installed Segoe MDL2 Assets icons and native Windows typography.
 - Stable action dimensions during running and Copied feedback.
 
 Source of truth: `src/SableKit.Desktop/ThemeManager.cs`, `Theme.xaml`, `Ui.cs`, the three window XAML/code-behind files, `Icon.cs` and `NativeWindow.cs`. Product constraints live in PRODUCT.md; desktop composition and task strategy live in .impeccable/surfaces/desktop.md.
 
 All layout and type measurements here are **WPF device-independent pixels (DIP, 1/96 inch)**. They are not CSS runtime values. Frontmatter padding lists top/right/bottom/left in that order; WPF Thickness constructors use left/top/right/bottom. The sidecar's browser samples translate these measurements to CSS pixels for illustration only.
 
-The 0.1.1 WPF verification harness passed 37 checks and produced 13 client-content captures. This evidence does not validate physical input, compositor blur, live DPI/monitor changes, high contrast, or Windows 10.
+The 0.1.2 verification work includes 17 updated client-content captures and in-process WPF checks; 56 in-process WPF checks passed before the final asynchronous clipboard change; its complete retest is blocked by Windows clipboard access denial. Captures are diagnostic evidence only. They do not validate physical mouse interaction, compositor blur, live DPI/monitor changes, high contrast, or Windows 10. See VERIFICATION.md for the recorded run results.
 
 ## Colors
 
@@ -177,25 +197,25 @@ High contrast overrides Surface, PanelSurface and Inset with SystemColors.Window
 
 ## Typography
 
-Segoe UI carries interface text, with Consolas for the SableNet result field. WPF defaults supply line height and letter spacing; no custom type scale ratio or font fallback stack is established.
+Segoe UI carries interface text, with Consolas for the SableNet and tray result fields. WPF defaults supply line height and letter spacing; no custom type scale ratio or font fallback stack is established.
 
-The frontmatter captures the main page heading, semibold editor title, body, field label, standard metadata, compact metadata and network-result roles. Observed local variants include the main brand at 21 DIP, SableNet heading at 26 DIP, tool titles at 16 DIP, grid action names at 11 DIP and list action names at 12 DIP. These are existing component choices, not a new global scale.
+The frontmatter captures the main page heading, semibold editor title, body, field label, standard metadata, compact metadata and result roles. Observed local variants include the main brand at 21 DIP, compact panel brands at 13 DIP semibold, tool titles at 16 DIP, grid action names at 11 DIP and list action names at 12 DIP. Header glyphs are 14 DIP; raw results are 11 DIP in SableNet and 10 DIP in the tray. These are existing component choices, not a new global scale.
 
-Compact names and metadata trim with ellipses; explanatory form copy and result text wrap. Short supporting text should remain readable when copied into new controls. Layout rounding and Display text formatting are enabled on windows.
+Compact names and metadata trim with ellipses; explanatory form copy wraps. Raw result fields preserve command line breaks without wrapping, with horizontal and vertical scrolling. Short supporting text should remain readable when copied into new controls. Layout rounding and Display text formatting are enabled on windows.
 
 ## Layout
 
-The quick panel is fixed at 336 × 404 DIP. Its outer border has one-DIP stroke and 15/12/15/12 DIP left/top/right/bottom padding. The header has a fixed 32-DIP row, search and suggestion rows are conditional, and the action area scrolls above the tool strip and footer. Pinned actions render as a list or a two-column grid; searching switches to a list.
+The quick panel is fixed at 336 × 404 DIP. Its borderless shell and WindowChrome have a 20-DIP corner radius and 14/12/14/14 DIP left/top/right/bottom padding. The header has a fixed 38-DIP row, search and suggestion rows are conditional, and the action area scrolls above the tool strip and footer. Pinned actions render as a list or a two-column grid; searching switches to a list. Dragging the header saves placement; double-clicking the brand resets placement. The footer's profile carousel supports previous/next arrows, mouse wheel, and left/right keys on the profile button.
 
 The main window opens at up to 920 × 640 DIP, capped to 90% of its monitor work-area width and 88% of its height. Minimum sizes relax to fit a smaller work area. Its 40-DIP draggable title bar always exposes minimize, maximize/restore and close. The sidebar is 154 DIP wide with scrolling navigation; content margins are 20/18/20/16 DIP. Actions allocates 36% to the library (including a 16-DIP gap) and 64% to the editor. Fields scroll and editor commands wrap below them. Profiles caps its flexible form at 590 DIP; Preferences caps at 540 DIP.
 
-SableNet starts at 510 × 560 DIP, with a 430 × 480 minimum and a 24-DIP content inset. Its result field absorbs remaining height. Action rows use wrapping containers where implemented.
+SableNet is a fixed 356 × 454 DIP panel with a 20-DIP shell and WindowChrome radius, no outer stroke, 14/12/14/14 DIP left/top/right/bottom padding and a 32-DIP header. Compact Address and optional Port fields, DNS and port presets sit above raw output. The result field absorbs remaining height; Check connection and Copy output stay in the bottom row. SableNet also remembers dragged placement and resets it by double-clicking its brand.
 
 Spacing is extracted from repeated code values rather than an imposed scale. Field labels sit 16 DIP below the preceding content and 7 DIP above their control; helpers follow by 6 DIP. There are no web breakpoints or mobile layouts. Minimum-window captures were inspected; broader DPI, text scaling and multi-monitor behavior still need native testing.
 
 ## Elevation & Depth
 
-The reliable depth system uses tonal surfaces and one-DIP borders. The project defines no custom DropShadowEffect or shadow scale. On supported Windows versions, NativeWindow requests native rounded corners and system backdrop: transient-window material for the compact panel, main-window material for the larger windows. The backdrop request is gated to Windows build 22621 or later, outside high contrast and when the app has not disabled it. Older platforms retain the ordinary window background.
+The reliable depth system uses tonal surfaces and one-DIP field borders. The project defines no custom DropShadowEffect or shadow scale. On supported Windows versions, NativeWindow requests native rounded corners and system backdrop: transient-window material for both compact panels, main-window material for the configuration window. Native border suppression is requested on Windows build 22000 or later. The backdrop request is gated to Windows build 22621 or later, outside high contrast and when the app has not disabled it. Older platforms retain the ordinary window background.
 
 **The Readable Surface Rule.** Maintain contrast on the ordinary charcoal/light surface; native material must not be necessary to understand a control.
 
@@ -205,9 +225,9 @@ The only custom visible feedback animation is a 140-ms opacity change from 0.65 
 
 ## Shapes
 
-Controls, navigation items, action tiles, fields and the configuration preview share the control radius. The compact panel uses separate outer-border and window-chrome radii recorded above. Dropdown items and scrollbar thumbs use smaller radii. Thin strokes define fields and secondary actions; primary actions rely on filled contrast.
+Controls, navigation items, action tiles, fields and the configuration preview share the control radius. Both compact panels use the 20-DIP shell and WindowChrome radii; the main window retains its 12-DIP WindowChrome radius. Header buttons use an 8-DIP radius. Dropdown items and scrollbar thumbs use smaller radii. Thin strokes define fields and secondary actions; primary actions rely on filled contrast. Compact panel shells omit the gray outer border.
 
-Header/caption icons use the installed Segoe MDL2 Assets font (matching SableLatch); no font files are redistributed. Other icons are original WPF Geometry paths on a 24-unit coordinate system with a 1.45-unit stroke, rounded caps and joins, scaled to the control's displayed size. Typical sizes range from 14 to 19 DIP. No shipping raster asset is used by this prototype.
+Application icons, including header/caption, navigation, actions and feedback, use the installed Segoe MDL2 Assets font (matching SableLatch); no font files are redistributed. Icon.cs renders named glyphs at the requested dimensions, with sizes typically 14–19 DIP. No shipping raster asset is used by this prototype.
 
 ## Components
 
@@ -215,19 +235,21 @@ Header/caption icons use the installed Segoe MDL2 Assets font (matching SableLat
 
 Primary buttons are semibold, use accent fill and its paired foreground, then use Hover/Text on hover. Filled buttons use Inset with a Border stroke; ghost buttons begin transparent. The common minimum height is 32 DIP, with a zero-padding 30-DIP icon control as an explicit compact exception. New action uses 18/10 horizontal/vertical padding.
 
-Header controls use the same installed Segoe MDL2 Assets glyphs as SableLatch: Search E721, Pin E718 and Close E8BB. Their adapted styling has no border. Active search/pin uses a persistent Hover fill; pinned state also adds “Pinned” to the panel title. Keyboard focus uses a short underline and brighter glyph, distinct from the active fill. Caption buttons use the same treatment. Other buttons follow the common styles below.
+Header controls use the same installed Segoe MDL2 Assets glyphs as SableLatch: Search E721, Pin E718 and Close E8BB. Their adapted styling has no border or focus underline: 28 × 28 DIP controls hold 14-DIP muted glyphs that brighten to Text on hover or keyboard focus. Active search/pin uses a persistent Hover fill; pinning leaves the brand title unchanged. Pressing dims the glyph to 0.55 opacity and disabled header controls use 0.3 opacity. Main caption buttons inherit this treatment with explicit 40 × 32 DIP bounds. Other buttons follow the common styles below.
 
 Pressed chrome uses 0.72 opacity. Disabled buttons use 0.45 opacity. Keyboard focus changes the border to Text; the Focus style also supplies a one-DIP outline with a two-DIP inset. These are WPF state triggers, not CSS transitions.
 
 ### Inputs and choices
 
-Text fields use Inset, Text, Border and the shared control radius, with a 36-DIP minimum height. The template provides muted placeholder text from Tag only while empty; persistent labels and automation names identify form fields. Focus changes the border to Text. Disabled fields use 0.45 opacity.
+Text fields use Inset, Text, Border and the shared control radius, with a 36-DIP minimum height. The template respects each field's BorderThickness, including zero for raw output fields. It provides muted placeholder text from Tag only while empty; persistent labels and automation names identify form fields. Focus changes the border to Text. Disabled fields use 0.45 opacity. The content host and scrollbar templates support both horizontal and vertical scrolling.
 
 Combo boxes have a 32-DIP minimum, a right-side chevron, a bordered rounded popup with 4-DIP inset and 280-DIP maximum height, and highlighted/selected item backgrounds. Preserve native keyboard expectations; full keyboard and high-contrast behavior remain verification items.
 
+Multiple detected addresses show an unselected picker with the prompt “Choose detected address.” Selecting one preserves the choice list. An explicit target/result handoff hides and clears that picker so unrelated clipboard choices do not accompany the result.
+
 ### Navigation and library rows
 
-Main navigation combines a line icon and body text, with the selected destination filled by Hover. Library rows use a bold name and muted tool description. Selection uses Hover, while mouse-over uses Inset. The current implementation's trigger precedence is the source of truth; do not infer new multi-state behavior from a static sample.
+Main navigation combines a native glyph and body text, with the selected destination filled by Hover. Library rows use a bold name and muted tool description. Selection uses Hover, while mouse-over uses Inset. The current implementation's trigger precedence is the source of truth; do not infer new multi-state behavior from a static sample.
 
 ### Action list and grid
 
@@ -239,7 +261,9 @@ Successful clipboard actions replace the content with a centered checkmark and C
 
 ### Configuration preview and results
 
-The configuration preview is a simple inset, rounded container showing the draft action name. It is not an elevated dashboard card. Network output is selectable, read-only, wrapped monospaced text with scrolling. Status summaries use text and polite live-region metadata where implemented. Copy result remains disabled until a result exists.
+The configuration preview is a simple inset, rounded container showing the draft action name. It is not an elevated dashboard card. Quick results replace the tray action area, with a return-to-actions control and an owning-tool handoff: Open SableNet preserves network target/output; other details open Activity. Successful password copies keep the centered Copied feedback instead of exposing the generated password as output.
+
+Network output is selectable, read-only monospaced text without wrapping, with horizontal and vertical scrolling. SableNet displays native command output from ping, Test-NetConnection or nslookup. SSH/HTTP/HTTPS/RDP/SMB presets populate Port; they do not run a check. A blank port selects ping; an entered port selects a TCP check. DNS is a separate action. The bottom Check connection button becomes Stop during a run. Status summaries use text and polite live-region metadata where implemented. Copy output remains disabled until output exists.
 
 ## Do's and Don'ts
 

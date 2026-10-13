@@ -1,109 +1,76 @@
 using System.ComponentModel;
-
 using System.Windows.Automation;
-
-
-
 namespace SableKit.Desktop;
 
-
-
 public partial class TrayWindow : Window
-
 {
-
     private readonly AppState state;
-
-    private bool refreshing;
-
-    private NetworkTarget? suggestionTarget;
-
+    private readonly PanelPlacement placement;
+    private IReadOnlyList<DetectedTarget> suggestions=[];
+    private bool positioned;
+    private int clipboardRequest;
+    private long trayDeactivatedAt=long.MinValue/2;
     public bool Pinned { get; private set; }
-
     public bool VerificationMode { get; set; }
-
     public TrayWindow(AppState state)
-
     {
-
-        InitializeComponent(); this.state = state;
-
-        SourceInitialized += (_, _) => NativeWindow.Apply(this, true);
-
-        Deactivated += (_, _) => { if (!Pinned && !ProfilePicker.IsDropDownOpen && !VerificationMode) Hide(); };
-
-        Closing += (_, e) => { if (!App.Exiting) { e.Cancel = true; Hide(); } };
-
-        PreviewKeyDown += KeyDownPanel;
-
-        state.Changed += Refresh; state.ResultChanged += UpdateResult; state.HideRequested += Hide;
-
+        InitializeComponent(); this.state=state;
+        placement=new PanelPlacement(this,Path.Combine(state.DataDirectory,"window.json"));
+        SourceInitialized+=(_,_)=>NativeWindow.Apply(this,true);
+        Deactivated+=(_,_)=>HandleDeactivated(NativeWindow.PointerOverTray());
+        Closing+=(_,e)=>{ if(!App.Exiting){ e.Cancel=true;Hide(); } };
+        PreviewKeyDown+=KeyDownPanel;
+        state.Changed+=Refresh; state.ResultChanged+=UpdateResult; state.HideRequested+=Hide;
         Refresh();
-
     }
-
-    public void Open(bool position = true)
-
+    internal void HandleDeactivated(bool trayInteraction)
     {
-
+        if(Pinned || VerificationMode) return;
+        if(trayInteraction) trayDeactivatedAt=Environment.TickCount64;
+        Hide();
+    }
+    internal void ToggleFromTray()
+    {
+        if(IsVisible || Environment.TickCount64-trayDeactivatedAt<500) { Hide(); trayDeactivatedAt=long.MinValue/2; }
+        else Open();
+    }
+    internal Dictionary<string,double>? OpenTimings { get; set; }
+    public void Open(bool position=true)
+    {
+        var timer = OpenTimings is null ? null : System.Diagnostics.Stopwatch.StartNew();
+        void Mark(string stage) { if(timer is null) return; OpenTimings![stage]=timer.Elapsed.TotalMilliseconds; timer.Restart(); }
         ThemeManager.Apply(state.Config.Theme);
-
-        if (position)
-
-        {
-
-            var area = SystemParameters.WorkArea;
-
-            Left = area.Right - Width - 14; Top = area.Bottom - Height - 14;
-
-        }
-
-        Refresh(); InspectClipboard(); Show(); Activate();
-
-        NativeWindow.Apply(this, true);
-
-        if (SearchBox.Visibility == Visibility.Visible) SearchBox.Focus(); else SearchButton.Focus();
-
+        if(position && !positioned) { placement.Restore(); positioned=true; }
+        Mark("ThemeAndPlacement"); Show(); Mark("Show"); Activate(); Mark("Activate"); InspectClipboard(); Mark("ClipboardRequest");
+        if(SearchBox.Visibility==Visibility.Visible) SearchBox.Focus();
     }
-
-    private void InspectClipboard()
-
+    internal void SavePosition() { placement.Save(); positioned=true; }
+    internal void ResetPosition() { placement.Reset(); positioned=true; }
+    private async void InspectClipboard()
     {
-
-        suggestionTarget = null; Suggestion.Visibility = Visibility.Collapsed;
-
+        var request=++clipboardRequest;
+        suggestions=[]; Suggestion.Visibility=Visibility.Collapsed;
         try
-
         {
-
-            if (NetworkTarget.TryParse(AppState.ReadClipboard(), out var target, out _) && (System.Net.IPAddress.TryParse(target!.Host, out _) || target.Host.Contains('.')))
-
-            {
-
-                suggestionTarget = target; SuggestionTarget.Text = target.Display;
-
-                SuggestionTitle.Text = target.Port.HasValue ? "Test connection" : "Ping address";
-
-                AutomationProperties.SetName(Suggestion, $"{SuggestionTitle.Text} {target.Display}"); Suggestion.Visibility = Visibility.Visible;
-
-            }
-
+            var text=await AppState.ReadClipboardAsync();
+            if(request!=clipboardRequest || !IsVisible) return;
+            suggestions=ClipboardTargets.Extract(text);
+            if(suggestions.Count==0) return;
+            var detected=suggestions[0];
+            SuggestionTitle.Text=suggestions.Count>1 ? "Choose a target" : detected.Error is not null ? "Review address" : detected.Target.Port is null ? "Ping address" : "Test TCP connection";
+            SuggestionTarget.Text=suggestions.Count>1 ? $"{suggestions.Count} addresses in clipboard" : detected.Display;
+            AutomationProperties.SetName(Suggestion,$"{SuggestionTitle.Text} {SuggestionTarget.Text}");
+            Suggestion.Visibility=Visibility.Visible;
         }
-
-        catch (System.Runtime.InteropServices.COMException) { state.SetResult("Clipboard is busy", "Try opening the panel again.", true); }
-
+        catch(System.Runtime.InteropServices.COMException) { }
     }
-
     public void Refresh()
-
     {
-
-        refreshing = true; ProfilePicker.ItemsSource = null; ProfilePicker.ItemsSource = state.Config.Profiles; ProfilePicker.SelectedItem = state.Config.ActiveProfile; refreshing = false;
-
+        ProfileName.Text=state.Config.ActiveProfile.Name;
+        ProfileButton.ToolTip=$"{state.Config.ActiveProfile.Name} · {state.Config.Profiles.FindIndex(p=>p.Id==state.Config.ActiveProfileId)+1} of {state.Config.Profiles.Count}";
+        PreviousProfile.IsEnabled=NextProfile.IsEnabled=state.Config.Profiles.Count>1;
         RenderActions();
-
     }
-
     private void RenderActions()
 
     {
@@ -210,72 +177,72 @@ public partial class TrayWindow : Window
 
     private void ItemChanged(object? sender, PropertyChangedEventArgs e) { if (e.PropertyName == nameof(ActionItem.State)) RenderActions(); }
 
-    private void UpdateResult() { ActionsHeading.Visibility = Visibility.Hidden; ResultText.Text = state.Status; ResultText.SetResourceReference(TextBlock.ForegroundProperty, state.LastFailed ? "Bad" : "Muted"); ResultButton.ToolTip = state.Result; ResultButton.Visibility = Visibility.Visible; }
 
-    public void TogglePin(object? sender, RoutedEventArgs? e) { Pinned = !Pinned; Topmost = Pinned; if (Pinned) PinButton.SetResourceReference(BackgroundProperty, "Hover"); else PinButton.Background = Brushes.Transparent; PanelTitle.Text = Pinned ? "SableKit · Pinned" : "SableKit"; PinButton.ToolTip = Pinned ? "Unpin · hide when focus moves away" : "Pin · keep panel open"; AutomationProperties.SetName(PinButton, Pinned ? "Unpin panel" : "Pin panel"); }
-
-    private void ToggleSearch(object sender, RoutedEventArgs e) => SetSearchVisible(SearchBox.Visibility != Visibility.Visible);
-
+    private void UpdateResult()
+    {
+        if(state.LastActionKind==ActionKind.Password && !state.LastFailed) return;
+        ActionsRegion.Visibility=Visibility.Collapsed; ResultRegion.Visibility=Visibility.Visible;
+        ResultTitle.Text=state.LastActionName; ResultOutput.Text=state.Result; ResultOutput.ScrollToEnd(); ResultStatus.Text=state.Status;
+        ResultButton.Content=state.LastActionKind==ActionKind.Network?"Open SableNet":"Details";
+    }
+    private void DismissResult(object sender,RoutedEventArgs e) { ResultRegion.Visibility=Visibility.Collapsed; ActionsRegion.Visibility=Visibility.Visible; }
+    public void TogglePin(object? sender,RoutedEventArgs? e)
+    {
+        Pinned=!Pinned; Topmost=Pinned;
+        if(Pinned) PinButton.SetResourceReference(BackgroundProperty,"Hover"); else PinButton.Background=Brushes.Transparent;
+        PinButton.ToolTip=Pinned?"Unpin · hide when focus moves away":"Pin · keep open"; AutomationProperties.SetName(PinButton,Pinned?"Unpin panel":"Pin panel");
+    }
+    private void ToggleSearch(object sender,RoutedEventArgs e)=>SetSearchVisible(SearchBox.Visibility!=Visibility.Visible);
     private void SetSearchVisible(bool visible)
     {
-        SearchBox.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
-        if (visible) SearchButton.SetResourceReference(BackgroundProperty, "Hover");
-        else { SearchButton.Background = Brushes.Transparent; SearchBox.Text = ""; }
-        SearchButton.ToolTip = visible ? "Close search (Esc)" : "Search actions (Ctrl+F)";
-        AutomationProperties.SetName(SearchButton, visible ? "Close search" : "Search actions");
-        if (visible) SearchBox.Focus(); else SearchButton.Focus();
+        DismissResult(this,new RoutedEventArgs()); SearchBox.Visibility=visible?Visibility.Visible:Visibility.Collapsed;
+        if(visible) SearchButton.SetResourceReference(BackgroundProperty,"Hover"); else { SearchButton.Background=Brushes.Transparent; SearchBox.Text=""; }
+        SearchButton.ToolTip=visible?"Close search":"Search"; if(visible) SearchBox.Focus();
     }
-
-    private void SearchChanged(object sender, TextChangedEventArgs e) { if (state is not null) RenderActions(); }
-
-    public void ToggleView(object? sender, RoutedEventArgs? e) { state.Config.ActiveProfile.GridView = !state.Config.ActiveProfile.GridView; Save(); }
-
-    private void ProfileChanged(object sender, SelectionChangedEventArgs e) { if (!refreshing && ProfilePicker.SelectedItem is Profile p) { state.Config.ActiveProfileId = p.Id; Save(); } }
-
-    private void Save() { try { state.Save(); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { state.SetResult("Settings could not be saved", ex.Message, true); } }
-
-    private async void RunSuggestion(object sender, RoutedEventArgs e) { if (suggestionTarget is not null) await state.ExecuteAsync(new ActionItem(new ActionDefinition { Name = SuggestionTitle.Text, Kind = ActionKind.Network }), suggestionTarget.Display); }
-
-    private void DragHeader(object sender, MouseButtonEventArgs e) { if (!e.Handled && e.LeftButton == MouseButtonState.Pressed && !IsControlSource(e.OriginalSource as DependencyObject)) try { DragMove(); } catch (InvalidOperationException) { } }
-
-    private static bool IsControlSource(DependencyObject? source)
+    private void SearchChanged(object sender,TextChangedEventArgs e) { if(state is not null) RenderActions(); }
+    public void ToggleView(object? sender,RoutedEventArgs? e) { state.Config.ActiveProfile.GridView=!state.Config.ActiveProfile.GridView; Save(); }
+    internal void CycleProfile(int direction)
     {
-        for (var current = source; current is not null; current = VisualTreeHelper.GetParent(current))
-            if (current is System.Windows.Controls.Primitives.ButtonBase) return true;
-        return false;
+        var profiles=state.Config.Profiles; var index=profiles.FindIndex(p=>p.Id==state.Config.ActiveProfileId);
+        state.Config.ActiveProfileId=profiles[(index+direction+profiles.Count)%profiles.Count].Id; Save();
     }
-
-    private void HideClick(object sender, RoutedEventArgs e) => Hide();
-
-    private void OpenMain(object sender, RoutedEventArgs e) { Hide(); ((App)Application.Current).OpenMain(); }
-
-    private void OpenPasswords(object sender, RoutedEventArgs e) { Hide(); ((App)Application.Current).OpenMain("Preferences"); }
-
-    private void OpenTools(object sender, RoutedEventArgs e) { Hide(); ((App)Application.Current).OpenMain("Tools"); }
-
-    private void OpenResult(object sender, RoutedEventArgs e) { Hide(); ((App)Application.Current).OpenMain("Activity"); }
-
-    private void OpenNetwork(object sender, RoutedEventArgs e) { Hide(); ((App)Application.Current).OpenNetwork(); }
-
-    private async void KeyDownPanel(object sender, KeyEventArgs e)
-
+    private void Next(object sender,RoutedEventArgs e)=>CycleProfile(1);
+    private void Previous(object sender,RoutedEventArgs e)=>CycleProfile(-1);
+    private void ProfileWheel(object sender,MouseWheelEventArgs e) { CycleProfile(e.Delta<0?1:-1); e.Handled=true; }
+    private void ProfileKeys(object sender,KeyEventArgs e) { if(e.Key is Key.Left or Key.Right) { CycleProfile(e.Key==Key.Right?1:-1);e.Handled=true; } }
+    private void Save() { try{state.Save();}catch(Exception ex) when(ex is IOException or UnauthorizedAccessException){state.SetResult("Settings could not be saved",ex.Message,true);} }
+    private async void RunSuggestion(object sender,RoutedEventArgs e)
     {
-
-        if (e.Key == Key.Escape) { if (state.IsRunning) state.CancelAll(); else if (SearchBox.IsVisible) { SetSearchVisible(false); } else Hide(); e.Handled = true; }
-
-        if (e.Key == Key.F && Keyboard.Modifiers == ModifierKeys.Control) { SetSearchVisible(true); e.Handled = true; }
-
-        var key = e.Key == Key.System ? e.SystemKey : e.Key;
-
-        if (Keyboard.Modifiers == ModifierKeys.Alt && key >= Key.D1 && key <= Key.D9)
-
-        {
-
-            var index = key - Key.D1; if (index < ActionsList.Items.Count && ActionsList.Items[index] is Button b && b.Tag is ActionItem item) await state.ExecuteAsync(item); e.Handled = true;
-
-        }
-
+        if(suggestions.Count!=1 || suggestions[0].Error is not null) { Hide(); ((App)Application.Current).OpenNetwork(candidates:suggestions); return; }
+        await state.ExecuteAsync(new ActionItem(new ActionDefinition{Name=SuggestionTitle.Text,Kind=ActionKind.Network}),suggestions[0].Target.Display);
     }
-
+    private void DragHeader(object sender,MouseButtonEventArgs e)
+    {
+        if(FindParent<Button>(e.OriginalSource as DependencyObject) is not null) return;
+        try { if(e.ClickCount==2 && FindParent<TextBlock>(e.OriginalSource as DependencyObject)==PanelTitle) { ResetPosition();e.Handled=true; } else { DragMove();SavePosition(); } }
+        catch(Exception ex) when(ex is IOException or UnauthorizedAccessException or InvalidOperationException) { state.SetResult("Position could not be saved",ex.Message,true); }
+    }
+    internal static T? FindParent<T>(DependencyObject? source) where T:DependencyObject
+    {
+        while(source is not null) { if(source is T match)return match; source=source is Visual?VisualTreeHelper.GetParent(source):LogicalTreeHelper.GetParent(source); } return null;
+    }
+    private void HideClick(object sender,RoutedEventArgs e)=>Hide();
+    private void OpenMain(object sender,RoutedEventArgs e) { Hide();((App)Application.Current).OpenMain(); }
+    private void OpenPasswords(object sender,RoutedEventArgs e) { Hide();((App)Application.Current).OpenMain("Preferences"); }
+    private void OpenTools(object sender,RoutedEventArgs e) { Hide();((App)Application.Current).OpenMain("Tools"); }
+    private void OpenResult(object sender,RoutedEventArgs e)
+    {
+        Hide();
+        if(state.LastActionKind==ActionKind.Network) ((App)Application.Current).OpenNetwork(state.LastNetworkTarget,state.Result,state.LastCandidates);
+        else ((App)Application.Current).OpenMain("Activity");
+    }
+    private void OpenNetwork(object sender,RoutedEventArgs e) { Hide();((App)Application.Current).OpenNetwork(); }
+    private async void KeyDownPanel(object sender,KeyEventArgs e)
+    {
+        if(e.Key==Key.Escape){if(state.IsRunning)state.CancelAll();else if(ResultRegion.IsVisible)DismissResult(this,e);else if(SearchBox.IsVisible)SetSearchVisible(false);else Hide();e.Handled=true;}
+        if(e.Key==Key.F && Keyboard.Modifiers==ModifierKeys.Control){SetSearchVisible(true);e.Handled=true;}
+        var key=e.Key==Key.System?e.SystemKey:e.Key;
+        if(Keyboard.Modifiers==ModifierKeys.Alt && key>=Key.D1 && key<=Key.D9 && ActionsRegion.IsVisible)
+        { var index=key-Key.D1; if(index<ActionsList.Items.Count && ActionsList.Items[index] is Button b && b.Tag is ActionItem item) await state.ExecuteAsync(item);e.Handled=true; }
+    }
 }
-

@@ -2,7 +2,7 @@
 
 A portable Windows toolkit built around tools, reusable actions, and profiles. Native C# / WPF / XAML on .NET 10.
 
-**Current status: working prototype 0.1.1.** The compact panel and configuration window execute real password, application-launch, and network operations. This is the first usable slice of the intended bundle; protected tools and workflows are still planned.
+**Current status: working prototype 0.1.2.** The compact panel and configuration window execute real password, application-launch, and network operations. This is the first usable slice of the intended bundle; protected tools and workflows are still planned.
 
 ## Run the portable build
 
@@ -12,9 +12,13 @@ A portable Windows toolkit built around tools, reusable actions, and profiles. N
 
 Settings are stored in `SableKit-data/settings.json` beside the executable, with a backup on replacement. Ordinary tools require no vault setup. The binary is unsigned. Windows 10 and 11 are intended targets; this prototype has been exercised on Windows 11 build 26200, x64. A clean machine without .NET and Windows 10 remain to be tested.
 
-## UI fixes in 0.1.1
+## Changes in 0.1.2
 
-Borderless SableLatch search/pin glyphs now show persistent active states. The compact tool strip and grid no longer clip their default contents. The main window fits its monitor work area and includes an explicit minimize/maximize/close bar.
+The tray follows SableLatch's compact header and placement behavior: drag to move, reopen in place, double-click the name to reset to bottom-right, and click the tray icon again to hide even when pinned. Pin/search retain their active fill without a title suffix or underline. The gray outer border is removed. Profiles switch with left/right arrows, keyboard arrows, or the mouse wheel.
+
+Quick-action output appears in the panel with an explicit **Open SableNet** handoff. SableNet is now a 356 x 454 DIP panel with separate address and optional port fields, fill-only presets, and a bottom Check connection button (Enter). It shows actual Windows ping, Test-NetConnection or nslookup output. Native TCP checks can take several seconds.
+
+Clipboard detection understands IPs, hostnames, HTTP(S) URLs, explicit ports and nearby port descriptions. Multiple targets require a choice. Out-of-range loose prose ports are ignored; malformed explicit endpoints such as host:99999 require correction. Detection never runs a command on its own. Clipboard reads run on demand off the UI thread with a 250 ms response limit, so an unavailable clipboard does not delay panel opening.
 
 Quit the previous version before launching this build. When extracting to a new folder, copy your existing SableKit-data folder there before launch to retain settings.
 
@@ -39,7 +43,7 @@ Install the .NET 10 SDK selected by `global.json` and run on Windows:
 
 This runs the dependency-free core checks, builds WPF, and publishes a self-contained x64 folder to `artifacts/SableKit-win-x64`. Windows CI uses the same script. No third-party UI library is required. Preserve the runtime notices included by the SDK when redistributing its files.
 
-For the optional Windows UI harness, run the published executable with `--verify <absolute-output-folder>`. It opens test windows, temporarily uses and then restores the clipboard, runs local TCP checks, writes client-content captures and a JSON report, and exits. `--measure <absolute-output-folder>` measures a separate panel-only process; `--opaque` disables its backdrop request for comparison. These are developer diagnostics, not ordinary startup options.
+For the optional Windows UI harness, run the published executable with `--verify <absolute-output-folder>`. It opens test windows, temporarily uses and then restores the clipboard, runs local ping/TCP checks, writes client-content captures and a JSON report, and exits. `--measure <absolute-output-folder>` measures a separate panel-only process; `--opaque` disables its backdrop request for comparison. These are developer diagnostics, not ordinary startup options.
 
 ## Project map
 
@@ -48,4 +52,4 @@ For the optional Windows UI harness, run the published executable with `--verify
 - `tests/SableKit.Tests`: meaningful core checks without external test packages.
 - [Product requirements](PRODUCT-REQUIREMENTS.md), [architecture](ARCHITECTURE.md), [milestones](MILESTONES.md), [verification](VERIFICATION.md), [design system](DESIGN.md).
 
-The new repository was inspected empty before the foundation was written. The owner subsequently approved direct implementation and a smoky charcoal visual direction. SableLatch was inspected as a UX reference; 0.1.1 adapts its borderless header styling and uses the same Windows search/pin glyphs. See THIRD-PARTY-NOTICES.txt and SABLELATCH-NOTICE.txt. Other vector icons are original.
+The new repository was inspected empty before the foundation was written. The owner subsequently approved direct implementation and a smoky charcoal visual direction. SableLatch was inspected as a UX reference; 0.1.2 adapts its borderless header styling and placement behavior and uses the same installed Windows icon family. See THIRD-PARTY-NOTICES.txt and SABLELATCH-NOTICE.txt. No font files are redistributed.

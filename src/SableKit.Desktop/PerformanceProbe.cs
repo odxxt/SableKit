@@ -16,14 +16,14 @@ internal static class PerformanceProbe
         var visible = await Sample(process);
         tray.Hide(); await Task.Delay(5000);
         var hidden = await Sample(process);
-        var latency = new List<double>();
+        var latency = new List<double>(); var stages = new List<Dictionary<string,double>>();
         for (var i = 0; i < 5; i++)
         {
-            var timer = Stopwatch.StartNew(); tray.Open();
+            tray.OpenTimings = new(); var timer = Stopwatch.StartNew(); tray.Open();
             await Application.Current.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
-            latency.Add(timer.Elapsed.TotalMilliseconds); tray.Hide();
+            latency.Add(timer.Elapsed.TotalMilliseconds); stages.Add(tray.OpenTimings); tray.OpenTimings=null; tray.Hide();
         }
-        File.WriteAllText(Path.Combine(output, "performance.json"), JsonSerializer.Serialize(new { StartupToUiIdleMilliseconds = startup, WarmOpenToUiIdleMilliseconds = latency, Visible = visible, Hidden = hidden, RenderTier = RenderCapability.Tier >> 16, NativeBackdropApiAccepted = NativeWindow.BackdropAccepted, RemoteSession = SystemParameters.IsRemoteSession, OpaqueRequested = App.DisableBackdrop, OS = Environment.OSVersion.ToString(), Runtime = Environment.Version.ToString(), Note = "One local Release run, five-second CPU samples; UI-idle timings are not display-present timestamps. No main or tool window created." }, new JsonSerializerOptions { WriteIndented = true }));
+        File.WriteAllText(Path.Combine(output, "performance.json"), JsonSerializer.Serialize(new { StartupToUiIdleMilliseconds = startup, WarmOpenToUiIdleMilliseconds = latency, WarmOpenStageMilliseconds = stages, Visible = visible, Hidden = hidden, RenderTier = RenderCapability.Tier >> 16, NativeBackdropApiAccepted = NativeWindow.BackdropAccepted, RemoteSession = SystemParameters.IsRemoteSession, OpaqueRequested = App.DisableBackdrop, OS = Environment.OSVersion.ToString(), Runtime = Environment.Version.ToString(), Note = "One local Release run, five-second CPU samples; UI-idle timings are not display-present timestamps. No main or tool window created." }, new JsonSerializerOptions { WriteIndented = true }));
     }
     private static async Task<object> Sample(Process process)
     {

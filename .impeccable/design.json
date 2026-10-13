@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-12T15:03:21.405Z",
+  "generatedAt": "2026-10-13T16:50:22Z",
   "title": "Design System: SableKit",
   "extensions": {
     "colorMeta": {
@@ -340,7 +340,11 @@
       },
       "result": {
         "displayName": "Network result",
-        "purpose": "Consolas read-only results."
+        "purpose": "SableNet raw native command output; read-only Consolas without wrapping, with both scroll axes."
+      },
+      "quick-result": {
+        "displayName": "Quick result",
+        "purpose": "Compact tray output; read-only Consolas without wrapping, with both scroll axes."
       }
     },
     "shadows": [],
@@ -369,12 +373,17 @@
       ],
       "alphaEncoding": "Frontmatter panel colors use CSS RRGGBBAA; WPF uses AARRGGBB. RGB and alpha are unchanged.",
       "rampProvenance": "Tonal ramps are synthetic OKLCH display aids only. They are not runtime palette values, established design tokens or new palette commitments.",
-      "material": "Native transient-window/main-window system backdrop request on Windows build 22621+ outside high contrast and when enabled. API acceptance does not verify appearance.",
+      "material": "Native transient-window system backdrop request for both compact panels and main-window backdrop for the configuration window on Windows build 22621+ outside high contrast and when enabled. Native border suppression is requested on Windows build 22000+. API acceptance does not verify compositor appearance.",
       "highContrast": "Runtime brushes map to SystemColors WindowBrush, WindowTextBrush and HighlightBrush. Native behavior remains partially unverified.",
-      "verification": "0.1.1:37 WPF in-process checks including caption commands, default grid no-overflow, icon layout, active-state feedback and simulated logical work-area fit. Physical multi-DPI/multi-monitor interaction, compositor, high contrast and Windows10 still pending. See VERIFICATION.md.",
+      "verification": "0.1.2 documentation refresh: 17 updated diagnostic client-content captures; 56 in-process WPF checks passed before the asynchronous clipboard change; final clipboard retest is blocked by Windows access denial. In-process WPF checks and captures do not validate physical mouse interaction, compositor appearance, live DPI/monitor changes, high contrast or Windows 10. See VERIFICATION.md for recorded run results.",
       "detector": "Web/CSS detector is not applicable to native WPF source. Sidecar previews are not the shipped interface.",
-      "layout": "Prototype 0.1.1: main max920x640 DIP, capped90%/88% of monitor work-area width/height;40-DIP caption row;154-DIP sidebar;36/64% library/editor split. Tray remains336x404. Small icon measure honors requested dimensions; grid names truncate to fit72-DIP tiles.",
-      "headerControls": "Installed Segoe MDL2 Assets Search E721, Pin E718, Close E8BB. Adapted SableLatch styling is borderless; active fill and Pinned title, distinct keyboard-focus underline. Windows font is not redistributed."
+      "layout": "Prototype 0.1.2: main max 920x640 DIP, capped 90%/88% of monitor work-area width/height; 40-DIP caption row; 154-DIP sidebar; 36/64% library/editor split, unchanged. Tray is 336x404 with a 38-DIP header. SableNet is fixed 356x454 with a 32-DIP header. Both compact shells use 20-DIP radii, no outer stroke and WPF left/top/right/bottom padding 14/12/14/14. Main WindowChrome remains 12 DIP. Grid names truncate to fit 72-DIP tiles.",
+      "headerControls": "Installed Segoe MDL2 Assets Search E721, Pin E718, Close E8BB. Borderless 28x28-DIP controls with 14-DIP glyphs and 8-DIP radius. Muted glyph brightens to Text on hover/keyboard focus; no focus underline. Active search/pin uses Hover fill without changing the brand title. Pressed glyph opacity .55; disabled control opacity .3. Main caption controls override bounds to 40x32 DIP. Windows font is not redistributed.",
+      "icons": "All named application icons in Icon.cs now render installed Segoe MDL2 Assets glyphs at requested dimensions. Browser preview SVGs are illustrative substitutes, not the shipped native glyph rendering.",
+      "placement": "Tray and SableNet persist dragged placement separately and reset placement on a brand double-click. Placement restoration clamps to SystemParameters.WorkArea; physical multi-monitor/DPI behavior remains unverified.",
+      "profileCarousel": "Tray footer cycles profiles with previous/next arrows, mouse wheel and left/right keys on the profile button; clicking the profile name advances. Previous/next arrows disable for a single profile.",
+      "results": "Tray quick results replace the action area, then hand off network target/output to SableNet or other details to Activity. Successful password copies retain centered Copied feedback. Read-only output is Consolas 10 DIP in the tray and 11 DIP in SableNet, with no wrapping and horizontal/vertical scrollbars. TextBox templates honor BorderThickness=0 on output fields.",
+      "network": "SableNet has a 13-DIP brand, Address and optional Port fields, DNS action and SSH/HTTP/HTTPS/RDP/SMB presets that populate Port without running. Bottom Check connection becomes Stop while running. Native ping, Test-NetConnection and nslookup output occupies the flexible result area. Multiple detected addresses show an unselected Choose detected address prompt; selecting preserves choices, while an explicit target/result handoff clears and hides them."
     }
   },
   "components": [
@@ -430,7 +439,7 @@
       "name": "Copied action",
       "kind": "custom",
       "refersTo": "action-list",
-      "description": "Centered feedback preserves the list action height. This static sample does not execute a clipboard write.",
+      "description": "Centered feedback preserves the list action height. The inline SVG is a browser illustration of the native MDL2 check glyph; this static sample does not execute a clipboard write.",
       "html": "<div class=\"ds-copied-canvas\"><button class=\"ds-copied\"><svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.45\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12 L10 17 L20 6\"/></svg><span>Copied</span></button></div>",
       "css": ".ds-copied-canvas{background:#18181B;padding:4px;width:304px}.ds-copied{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;height:46px;font:600 13px 'Segoe UI',sans-serif;background:transparent;color:#F4F4F5;border:1px solid transparent;border-radius:12px;padding:6px 9px}.ds-copied:hover{background:#333337}.ds-copied:focus-visible{outline:1px solid #F4F4F5;outline-offset:-3px}.ds-copied:active{opacity:.72}"
     },
@@ -441,15 +450,30 @@
       "description": "Simple inset preview of a draft action name, without an added shadow.",
       "html": "<div class=\"ds-preview\">Copy password</div>",
       "css": ".ds-preview{font:600 13px 'Segoe UI',sans-serif;border-radius:12px;background:#232326;color:#F4F4F5;padding:12px 14px}"
+    },
+    {
+      "name": "Compact header control",
+      "kind": "button",
+      "refersTo": "button-header",
+      "description": "Browser illustration of active Search. The inline SVG substitutes for the installed native MDL2 glyph; focus brightens the glyph without an underline.",
+      "html": "<div class=\"ds-header-canvas\"><button class=\"ds-header\" aria-label=\"Search actions\" aria-pressed=\"true\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" aria-hidden=\"true\"><circle cx=\"6.5\" cy=\"6.5\" r=\"5\"/><path d=\"M10 10L15 15\"/></svg></button></div>",
+      "css": ".ds-header-canvas{background:#18181B;padding:8px}.ds-header{display:flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border:0;border-radius:8px;background:transparent;color:#ADADB6;cursor:pointer}.ds-header[aria-pressed=true]{background:#333337}.ds-header:hover,.ds-header:focus-visible{color:#F4F4F5;outline:none}.ds-header:active svg{opacity:.55}.ds-header:disabled{opacity:.3;cursor:default}"
+    },
+    {
+      "name": "Native command output",
+      "kind": "custom",
+      "description": "Browser illustration of borderless SableNet results: preserved lines and both scroll axes. Native execution and scroll behavior require WPF verification.",
+      "html": "<div class=\"ds-output-canvas\"><pre class=\"ds-output\" tabindex=\"0\" aria-label=\"Native command output\">Pinging 127.0.0.1 with 32 bytes of data:\nReply from 127.0.0.1: bytes=32 time&lt;1ms TTL=128</pre></div>",
+      "css": ".ds-output-canvas{background:#18181B;padding:8px;width:280px}.ds-output{font:11px Consolas,monospace;color:#F4F4F5;background:#232326;white-space:pre;overflow:auto;height:120px;padding:9px;border:0;border-radius:12px;margin:0}.ds-output:focus-visible{outline:none}"
     }
   ],
   "narrative": {
     "northStar": "Smoky black, neutral charcoal and white",
-    "overview": "SableKit uses the owner's chosen smoky black, neutral charcoal and white direction for a modern, enterprise-quality desktop utility. Subtle Raycast influence and the compact pin/search/click-to-act familiarity of SableLatch inform the implementation. Native Segoe UI, quiet metadata, thin outlines and restrained rounded controls keep actions readable.\n\nThis is an extraction of prototype 0.1, implemented directly in WPF without an approved image composition. It records the current code, not a new branding commitment. Tonal layering supplies the dependable structure; native Windows material is an enhancement whose compositor appearance still needs validation.",
+    "overview": "SableKit uses the owner's chosen smoky black, neutral charcoal and white direction for a modern, enterprise-quality desktop utility. Subtle Raycast influence and the compact pin/search/click-to-act familiarity of SableLatch inform the implementation. Native Segoe UI, quiet metadata, thin outlines and restrained rounded controls keep actions readable.\n\nThis is an extraction of prototype 0.1.2, implemented directly in WPF with the owner's approved SableLatch-style native icons and compact header behavior. It records the current code, not a new branding commitment. Tonal layering supplies the dependable structure; native Windows material is an enhancement whose compositor appearance still needs validation.",
     "keyCharacteristics": [
       "Compact controls with clear action labels and quieter supporting text.",
       "Charcoal and white emphasis, with semantic status resources.",
-      "Original line geometry and native Windows typography.",
+      "Installed Segoe MDL2 Assets icons and native Windows typography.",
       "Stable action dimensions during running and Copied feedback."
     ],
     "rules": [

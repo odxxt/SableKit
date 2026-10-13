@@ -5,6 +5,18 @@ namespace SableKit.Desktop;
 
 internal static class NativeWindow
 {
+    [StructLayout(LayoutKind.Sequential)] private struct CursorPoint { public int X, Y; }
+    [DllImport("user32.dll")] private static extern bool GetCursorPos(out CursorPoint point);
+    [DllImport("user32.dll")] private static extern IntPtr WindowFromPoint(CursorPoint point);
+    [DllImport("user32.dll")] private static extern IntPtr GetAncestor(IntPtr window, uint flags);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)] private static extern int GetClassName(IntPtr window, System.Text.StringBuilder text, int count);
+    internal static bool PointerOverTray()
+    {
+        if (!GetCursorPos(out var point)) return false;
+        var name = new System.Text.StringBuilder(128);
+        GetClassName(GetAncestor(WindowFromPoint(point), 2), name, name.Capacity);
+        return name.ToString() is "Shell_TrayWnd" or "Shell_SecondaryTrayWnd" or "NotifyIconOverflowWindow";
+    }
     internal static bool BackdropAccepted { get; private set; }
     [StructLayout(LayoutKind.Sequential)] private struct Margins { public int Left, Right, Top, Bottom; }
     [DllImport("dwmapi.dll")] private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
@@ -31,6 +43,7 @@ internal static class NativeWindow
         var handle = new WindowInteropHelper(window).Handle;
         var dark = ThemeManager.IsDark ? 1 : 0; DwmSetWindowAttribute(handle, 20, ref dark, 4);
         var corners = 2; DwmSetWindowAttribute(handle, 33, ref corners, 4);
+        var border = unchecked((int)0xFFFFFFFE); DwmSetWindowAttribute(handle, 34, ref border, 4);
         if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22621) && !SystemParameters.HighContrast && !App.DisableBackdrop)
         {
             var backdrop = compact ? 3 : 2;

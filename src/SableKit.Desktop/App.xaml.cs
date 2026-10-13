@@ -65,16 +65,19 @@ public partial class App : Application
         if (main is null) { main = new MainWindow(State); main.Closed += (_, _) => main = null; }
         main.Navigate(page); main.Show(); if (main.WindowState == WindowState.Minimized) main.WindowState = WindowState.Normal; main.Activate();
     }
-    public void OpenNetwork()
+    public void OpenNetwork(DetectedTarget? target = null, string? output = null, IReadOnlyList<DetectedTarget>? candidates = null)
     {
-        if (network is null) { network = new NetworkWindow(); network.Closed += (_, _) => network = null; }
+        if (network is null) { network = new NetworkWindow(false); network.Closed += (_, _) => network = null; }
+        if (target is not null) network.SetTarget(target, output);
+        else if (candidates is { Count: > 0 }) network.SetCandidates(candidates);
+        else if (!network.IsVisible) network.LoadClipboard();
         network.Show(); if (network.WindowState == WindowState.Minimized) network.WindowState = WindowState.Normal; network.Activate();
     }
     private void CreateTray()
     {
         var menu = new Forms.ContextMenuStrip(); menu.Items.Add("Quick panel", null, (_, _) => OpenTray()); menu.Items.Add("Open SableKit", null, (_, _) => OpenMain()); menu.Items.Add(new Forms.ToolStripSeparator()); menu.Items.Add("Quit", null, (_, _) => Quit());
         trayIcon = new Forms.NotifyIcon { Icon = CreateIcon(), Text = "SableKit · Ctrl+Alt+K", Visible = true, ContextMenuStrip = menu };
-        trayIcon.MouseClick += (_, e) => { if (e.Button == Forms.MouseButtons.Left) { if (tray?.IsVisible == true && !tray.Pinned) tray.Hide(); else OpenTray(); } };
+        trayIcon.MouseClick += (_, e) => { if (e.Button == Forms.MouseButtons.Left) { tray ??= new TrayWindow(State); tray.ToggleFromTray(); } };
     }
     private static System.Drawing.Icon CreateIcon()
     {

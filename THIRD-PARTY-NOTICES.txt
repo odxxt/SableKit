@@ -1,4 +1,6 @@
-The header control styling in Theme.xaml is adapted from SableLatch (odxxt),
-reference commit 59a077a, under the MIT license reproduced in SABLELATCH-NOTICE.txt.
-Search, pin, and caption glyphs use the Segoe MDL2 Assets font installed with Windows;
-no font files are redistributed. Other vector icons remain original SableKit geometry.
+The header control styling in Theme.xaml and compact placement/reset behavior
+in PanelPlacement.cs are adapted from SableLatch (odxxt), reference commit
+59a077a, under the MIT license reproduced in SABLELATCH-NOTICE.txt.
+Interface glyphs use the Segoe MDL2 Assets font installed with Windows;
+no font files are redistributed. Preserve the separate runtime notices
+included by the .NET SDK in the self-contained distribution.

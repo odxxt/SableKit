@@ -27,6 +27,11 @@ public sealed class ActionItem(ActionDefinition definition) : INotifyPropertyCha
 public sealed class AppState(ConfigurationStore store, Configuration configuration)
 {
     public Configuration Config { get; } = configuration;
+    public string DataDirectory => Path.GetDirectoryName(store.Path)!;
+    public ActionKind? LastActionKind { get; private set; }
+    public string LastActionName { get; private set; } = "SableKit";
+    public DetectedTarget? LastNetworkTarget { get; private set; }
+    public IReadOnlyList<DetectedTarget> LastCandidates { get; private set; } = [];
     public List<ActionItem> Items { get; private set; } = configuration.Actions.Select(a => new ActionItem(a)).ToList();
     public string Status { get; private set; } = "Ready when you are.";
     public string Result { get; private set; } = "";
@@ -46,7 +51,7 @@ public sealed class AppState(ConfigurationStore store, Configuration configurati
     public void SetResult(string summary, string detail = "", bool failed = false)
     { Status = summary; Result = detail; LastFailed = failed; ResultChanged?.Invoke(); }
 
-    public static string ReadClipboard() => Clipboard.ContainsText() ? Clipboard.GetText() : "";
+    public static Task<string> ReadClipboardAsync() => ClipboardReader.ReadTextAsync();
     public static async Task CopyAsync(string value)
     {
         for (var attempt = 0; ; attempt++)
@@ -60,6 +65,7 @@ public sealed class AppState(ConfigurationStore store, Configuration configurati
     {
         if (!item.Available || active.ContainsKey(item.Definition.Id)) return;
         var action = item.Definition;
+        LastActionKind = action.Kind; LastActionName = action.Name; LastNetworkTarget = null; LastCandidates = [];
         using var cancellation = new CancellationTokenSource(); active.Add(action.Id, cancellation);
         item.SetState(ExecutionState.Running, "Running…");
         SetResult($"Running {action.Name}…");
@@ -78,12 +84,22 @@ public sealed class AppState(ConfigurationStore store, Configuration configurati
                     var start = new ProcessStartInfo(action.Executable) { UseShellExecute = false, WorkingDirectory = Path.GetDirectoryName(action.Executable)! };
                     foreach (var argument in action.Arguments) start.ArgumentList.Add(argument);
                     using (Process.Start(start) ?? throw new InvalidOperationException("Windows did not start the application.")) { }
-                    feedback = "Opened"; SetResult("Application launched", action.Name); break;
+                    feedback = "Opened"; SetResult("Opened", $"{action.Name} is open."); break;
                 case ActionKind.Network:
-                    var input = explicitTarget ?? (string.IsNullOrWhiteSpace(action.Target) ? ReadClipboard() : action.Target);
-                    if (!NetworkTarget.TryParse(input, out var target, out var error)) throw new InvalidOperationException(error);
-                    var result = await NetworkChecks.RunAsync(target!, cancellation.Token);
-                    SetResult(result.Summary, $"{result.Detail}\nElapsed: {result.Milliseconds} ms", !result.Success);
+                    var input = explicitTarget ?? (string.IsNullOrWhiteSpace(action.Target) ? await ReadClipboardAsync() : action.Target);
+                    LastCandidates = ClipboardTargets.Extract(input);
+                    NetworkTarget? target;
+                    if (LastCandidates.Count > 1) throw new InvalidOperationException("Several addresses were found. Open SableNet to choose one.");
+                    if (LastCandidates.Count == 1)
+                    {
+                        LastNetworkTarget = LastCandidates[0];
+                        if (LastNetworkTarget.Error is not null) throw new InvalidOperationException(LastNetworkTarget.Error);
+                        target = LastNetworkTarget.Target;
+                    }
+                    else if (!NetworkTarget.TryParse(input, out target, out var error)) throw new InvalidOperationException(error);
+                    LastNetworkTarget ??= new(target!, target!.Port?.ToString() ?? "");
+                    var result = await NetworkCommand.Run(target!, cancellation.Token, new Progress<string>(text => SetResult("Running", text)));
+                    SetResult(result.Summary, result.Detail, !result.Success);
                     if (!result.Success) { item.SetState(ExecutionState.Failed, result.Summary); return; }
                     feedback = "Completed"; break;
                 default: throw new InvalidOperationException("This operation is unavailable.");
