@@ -1,22 +1,20 @@
 # Desktop surfaces
 
-Mode: Operate. Scope: native tray, action library/configuration, compact network checks.
+Mode: Operate. Native WPF tray, action library, separate editors and compact network checks.
 
 ## Direction contract
-THESIS: Reach a useful action in one click, then return to work. Configuration belongs in a deliberate larger workspace.
+THESIS: Find and run an action quickly; configure deliberately in the larger workspace.
+OWN-WORLD: Neutral smoky charcoal, white labels, gray metadata, Segoe UI and MDL2 icons. Thin field outlines; no button/tab/native-frame outlines. Rounded transparent20-DIP shells currently provide alpha translucency only. Original desktop blur remains unmet.
+STORY: Open, find, run, inspect real output; explicitly open the owning tool for detail. Preview never executes.
 
-OWN-WORLD: Smoked charcoal, white action labels, quiet gray metadata, thin neutral field outlines, 12-DIP control radii, 20-DIP compact shells, native Segoe UI and installed Segoe MDL2 Assets icons. Compact shells have no gray outer stroke. System material is requested when supported; an opaque charcoal fallback maintains readability, while compositor appearance remains unverified.
+## Approved composition - 2026-10-14
+Tray336x404: borderless header search/pin/settings/close, conditional local clipboard suggestion, pinned list/grid or inline results, SableNet tool shortcut, profile carousel. No footer Open app; password generation/apps are built in. Wheel dead zone120 and420ms cooldown.
+Main up to920x640 capped90%/88% work area: caption controls and simple horizontal top tabs. Default action grid with search;118-DIP cards,12 gaps, two columns at720. Clicking opens a separate settings window.
+Editor660x650 capped to work area: sticky82-DIP live list/grid preview above scrolling fields, fixed Save/Test/Duplicate below. ActionVisual shared with tray; independent unsaved draft guards.
+SableNet356x454: editable address, optional Port, presets that fill without execution, native output, bottom Check/Stop and Copy.
 
-STORY: Open, find, run, see the actual result. Pin when staying; edit without making the tray into a settings form.
+## Behavior
+Content wheel scrolling uses140ms easing, usual27-DIP step and90-DIP queue bound; reduced motion skips animation. Keyboard focus remains visible through fill/foreground. Tray placement/toggle/pin and explicit result handoff retain SableLatch-inspired behavior.
 
-FIRST VIEWPORT: 336 x 404 DIP tray with a 38-DIP header, conditional search/suggestion, pinned list/grid, secondary tool strip and profile carousel footer. Shell padding is 14/12/14/14 DIP left/top/right/bottom. Main window remains capped at 920 x 640 DIP and 90%/88% of monitor work-area width/height, with a visible 40-DIP caption row. Compact header controls are 28 x 28 DIP with 14-DIP SableLatch-style Windows glyphs, borderless active fill and brighter glyphs on hover/focus. There is no focus underline or Pinned suffix in the brand title.
-
-INTERACTION: Dragged tray placement persists; double-clicking the brand resets it. Profile arrows, mouse wheel and left/right keys on the profile button cycle profiles. Quick results replace the action area and offer a handoff to the owning tool: network target/output opens in SableNet; other details open Activity. Successful password copying retains stable-sized Copied feedback.
-
-SABLENET: Fixed 356 x 454 DIP compact panel, with 20-DIP shell/WindowChrome radius, 14/12/14/14 DIP padding, a 32-DIP header and a 13-DIP brand. Address, optional Port, DNS and port presets precede raw native command output; Check connection/Stop and Copy output remain at the bottom. Presets populate the port without executing. Multiple clipboard addresses show an unselected “Choose detected address” picker; explicit target/result handoff clears and hides the picker. SableNet also remembers placement and supports brand double-click reset. Raw result text is Consolas 11 DIP here and 10 DIP in the tray, without wrapping and with horizontal/vertical scrolling. The TextBox template respects zero BorderThickness on both output fields.
-
-FORM: User-pinned SableLatch/Raycast-adjacent operation surface. Context launcher and concept-seed were attempted but their engine download failed; no seed key exists. Explicit user direction and direct-code choice govern this build, not an invented roll. Signature feedback is a stable-sized centered checkmark and Copied only after successful clipboard write.
-
-FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
-
-No shipping rasters planned. Application icons use installed Windows Segoe MDL2 Assets throughout; no font files are redistributed. Adapted SableLatch header styling retains its MIT notice. No animation runs while hidden. The 0.1.2 refresh includes 17 diagnostic client-content captures; 56 in-process WPF checks passed before the final asynchronous clipboard change; the full retest is blocked by Windows clipboard access denial. Physical mouse interaction, compositor appearance, live DPI/monitor changes, high contrast and Windows 10 remain unverified. Review must distinguish captured WPF rendering from compositor/native-interaction validation.
+## Evidence and limits
+Current0.1.3:76 in-process WPF checks,46 core checks,21 client renders. Narrow-grid and closed-choice focus fixes passed targeted local checks. Independent initial finish review exists; confirmation/documenter hit usage limits, so final approval is not claimed. Client renders do not validate desktop compositing or physical input. Blur is not active; Windows10, high contrast, native resizing and live DPI/monitor transitions remain unverified. See VERIFICATION.md and DESIGN.md.

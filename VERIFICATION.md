@@ -1,3 +1,40 @@
+# Verification - prototype 0.1.3 action-grid and shell refinement
+
+Recorded 2026-10-14 on Windows 11 build 26200, SDK 10.0.401 / runtime 10.0.12. Release WPF build and self-contained x64 publish passed.
+
+## Current evidence
+
+- **46 core checks passed.** Existing parsing, settings, password generation, local network and cancellation checks remain green.
+- **76 in-process WPF checks passed.** This includes real clipboard read/write, contested-reader response, stable Copied feedback, native local network commands, target selection, tray placement/toggle logic, and the earlier action/profile flows. New checks cover the action grid, separate protected drafts, non-executing live preview, sticky preview, top tabs, removal of standalone password/Open app shortcuts, profile wheel gating, bounded scrolling, two-column layout at 720 DIP, and outline-free keyboard focus on closed choices.
+- **21 client-content captures** cover compact/main/network/editor views, light/dark themes and small/simulated work areas. Rounded corner pixels are transparent and the windows have no WindowChrome instance.
+- A fresh Impeccable review found a narrow-grid wrapping defect and invisible dropdown keyboard focus. Both were corrected and their regression checks passed. The original desktop-blur promise remains unmet: current layered shells use alpha translucency and bypass DWM backdrop requests. This prototype is not full visual-material approval.
+
+The 0.1.2 successful-clipboard retest was previously blocked by Windows access denial. Clipboard access was available for this complete 0.1.3 run; the new asynchronous reader and successful copy path passed. Tests temporarily use and restore clipboard contents.
+
+The harness raises routed events and uses actual WPF controls, clipboard APIs and local ping/Test-NetConnection processes. It does not physically click the Windows tray icon or drive a full native mouse/keyboard journey. RenderTargetBitmap captures show client content, not desktop compositing. Transparent-pixel checks do not establish the real desktop edge appearance. Simulated work areas do not validate live DPI/monitor transitions.
+
+## Local opening and idle sample
+
+A separate published Release process created only the normal tray/hotkey/panel path, with no main or tool window. CPU intervals lasted five seconds; warm openings were sampled five times.
+
+| Measurement | Local run |
+|---|---:|
+| Process start to UI idle | 1,294 ms |
+| Warm open to UI idle | 0.9-2.3 ms |
+| Visible working set / private bytes | 150.5 / 76.7 MiB |
+| Hidden working set / private bytes | 151.5 / 77.8 MiB |
+| Visible / hidden CPU, one logical core | 0.31% / 0% |
+
+These are one short local diagnostic sample, with another SableKit version running, not display-present timestamps or performance guarantees. The panel opens without waiting for the asynchronous clipboard read to finish. No DWM backdrop was requested by these transparent shells. Runtime-inclusive download size is separate from memory/CPU usage. The final corrections affect main-grid sizing and dropdown focus, neither created by this panel-only probe.
+
+## Remaining validation and scope
+
+Desktop blur is **not implemented by the current transparent-shell path**. Physical tray clicks/drag/title-double-click, native resizing, full keyboard/screen-reader use, live DPI/monitor transitions, compositor edge appearance, high contrast, Windows 10 and a clean machine without .NET remain unverified. The older running user application was not replaced or terminated. Quit it before launching the new portable build.
+
+SableType, integrated SableLatch/security, workflows, addon API/catalog and broader action customization remain planned. See IMPLEMENTATION-STATUS.md. The prior-version evidence below is retained as history and does not override current results or limitations.
+
+---
+
 # Verification - prototype 0.1.2 compact interaction update
 
 Recorded 2026-10-13 on Windows 11 build 26200, SDK 10.0.401 / runtime 10.0.12. Release WPF build and self-contained x64 publish passed.

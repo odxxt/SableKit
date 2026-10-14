@@ -8,6 +8,7 @@ public partial class TrayWindow : Window
     private readonly PanelPlacement placement;
     private IReadOnlyList<DetectedTarget> suggestions=[];
     private bool positioned;
+    private readonly ProfileWheelGate profileWheel = new();
     private int clipboardRequest;
     private long trayDeactivatedAt=long.MinValue/2;
     public bool Pinned { get; private set; }
@@ -108,49 +109,7 @@ public partial class TrayWindow : Window
 
             if (grid) button.SetResourceReference(BackgroundProperty, "Inset");
 
-            var content = new Grid();
-
-            if (item.Copied)
-
-            {
-
-                var copied = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
-
-                copied.Children.Add(new Icon { Kind = "check", Width = 17, Height = 17, Margin = new Thickness(0, 0, 7, 0) }); copied.Children.Add(new TextBlock { Text = "Copied", FontWeight = FontWeights.SemiBold }); content.Children.Add(copied);
-
-            }
-
-            else if (grid)
-
-            {
-
-                var column = new StackPanel(); column.Children.Add(new Icon { Kind = item.Icon, Width = 19, Height = 19, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 0, 0, 7) });
-
-                column.Children.Add(new TextBlock { Text = item.Running ? "Running…" : item.Name, FontSize = 11, FontWeight = FontWeights.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis });
-
-                column.Children.Add(Muted(item.Running ? "Running…" : item.ToolName, 10)); content.Children.Add(column);
-
-            }
-
-            else
-
-            {
-
-                content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(30) }); content.ColumnDefinitions.Add(new ColumnDefinition()); content.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-
-                var icon = new Icon { Kind = item.Icon, Width = 18, Height = 18, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center }; content.Children.Add(icon);
-
-                var text = new StackPanel { VerticalAlignment = VerticalAlignment.Center }; Grid.SetColumn(text, 1);
-
-                text.Children.Add(new TextBlock { Text = item.Name, FontSize = 12, FontWeight = FontWeights.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis });
-
-                var subtitle = item.State is ExecutionState.Running or ExecutionState.Failed or ExecutionState.Cancelled ? item.Feedback : item.Definition.Kind == ActionKind.Password ? $"{ActionSettings.PasswordLength(state.Config, item.Definition)} characters · copy" : item.Description;
-
-                text.Children.Add(Muted(subtitle, 10)); content.Children.Add(text);
-
-                if (index < 9) { var hint = Muted($"Alt {index + 1}", 10); hint.VerticalAlignment = VerticalAlignment.Center; hint.Margin = new Thickness(6, 0, 0, 0); Grid.SetColumn(hint, 2); content.Children.Add(hint); }
-
-            }
+            var content = ActionVisual.Create(item, state.Config, grid, index);
 
             if (item.Copied && IsVisible && !state.Config.ReducedMotion && SystemParameters.ClientAreaAnimation) content.BeginAnimation(OpacityProperty, new System.Windows.Media.Animation.DoubleAnimation(0.65, 1, TimeSpan.FromMilliseconds(140)) { FillBehavior = System.Windows.Media.Animation.FillBehavior.Stop });
 
@@ -173,10 +132,7 @@ public partial class TrayWindow : Window
 
     }
 
-    private TextBlock Muted(string text, double size) { var block = new TextBlock { Text = text, FontSize = size, Margin = new Thickness(0, 3, 0, 0), TextTrimming = TextTrimming.CharacterEllipsis }; block.SetResourceReference(TextBlock.ForegroundProperty, "Muted"); return block; }
-
     private void ItemChanged(object? sender, PropertyChangedEventArgs e) { if (e.PropertyName == nameof(ActionItem.State)) RenderActions(); }
-
 
     private void UpdateResult()
     {
@@ -208,8 +164,8 @@ public partial class TrayWindow : Window
     }
     private void Next(object sender,RoutedEventArgs e)=>CycleProfile(1);
     private void Previous(object sender,RoutedEventArgs e)=>CycleProfile(-1);
-    private void ProfileWheel(object sender,MouseWheelEventArgs e) { CycleProfile(e.Delta<0?1:-1); e.Handled=true; }
-    private void ProfileKeys(object sender,KeyEventArgs e) { if(e.Key is Key.Left or Key.Right) { CycleProfile(e.Key==Key.Right?1:-1);e.Handled=true; } }
+    private void ProfileWheel(object sender,MouseWheelEventArgs e) { var direction=profileWheel.Step(e.Delta,Environment.TickCount64); if(direction!=0) CycleProfile(direction); e.Handled=true; }
+    private void ProfileKeys(object sender,KeyEventArgs e) { if(e.Key is Key.Left or Key.Right) { if(!e.IsRepeat) CycleProfile(e.Key==Key.Right?1:-1);e.Handled=true; } }
     private void Save() { try{state.Save();}catch(Exception ex) when(ex is IOException or UnauthorizedAccessException){state.SetResult("Settings could not be saved",ex.Message,true);} }
     private async void RunSuggestion(object sender,RoutedEventArgs e)
     {
@@ -228,8 +184,6 @@ public partial class TrayWindow : Window
     }
     private void HideClick(object sender,RoutedEventArgs e)=>Hide();
     private void OpenMain(object sender,RoutedEventArgs e) { Hide();((App)Application.Current).OpenMain(); }
-    private void OpenPasswords(object sender,RoutedEventArgs e) { Hide();((App)Application.Current).OpenMain("Preferences"); }
-    private void OpenTools(object sender,RoutedEventArgs e) { Hide();((App)Application.Current).OpenMain("Tools"); }
     private void OpenResult(object sender,RoutedEventArgs e)
     {
         Hide();

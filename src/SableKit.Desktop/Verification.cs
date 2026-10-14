@@ -30,6 +30,7 @@ internal static class Verification
             Capture(tray, output, "tray-list.png");
             tray.TogglePin(null, null); await Settle(); Capture(tray, output, "tray-unpinned.png");
             Check(!tray.Pinned && !tray.PanelTitle.Text.Contains("Pinned"), "Unpin clears the retained state"); tray.TogglePin(null, null);
+            Check(!Descendants<TextBlock>(tray).Any(t=>t.Text is "Open app" or "Passwords"), "Tray omits Open app and the password tool shortcut");
             var dpi = VisualTreeHelper.GetDpi(tray);
             var clippedIcons = Descendants<Icon>(tray).Where(i => i.IsVisible && (Math.Abs(i.RenderSize.Width - i.Width) > 1 / dpi.DpiScaleX || Math.Abs(i.RenderSize.Height - i.Height) > 1 / dpi.DpiScaleY)).Select(i => $"{i.Kind}: {i.Width}x{i.Height} -> {i.RenderSize}").ToArray();
             Check(clippedIcons.Length == 0, "Small icon layout matches requested dimensions within pixel rounding: " + string.Join(", ", clippedIcons));
@@ -44,7 +45,11 @@ internal static class Verification
             tray.ToggleView(null, null);
             tray.CycleProfile(1); Check(state.Config.ActiveProfileId == "lab" && tray.ActionsList.Items.Count == 2, "Profile switch changes pinned references");
             tray.CycleProfile(-1);
-            if (!ClipboardReader.OpenClipboard(IntPtr.Zero)) throw new InvalidOperationException("Could not hold clipboard for contention test");
+            var gate=new ProfileWheelGate();
+            Check(gate.Step(-120,1000)==1 && gate.Step(-120,1010)==0 && gate.Step(-120,1200)==0 && gate.Step(-120,1420)==1, "Profile wheel burst holds at one profile during its settling interval");
+            var precise=new ProfileWheelGate();
+            Check(precise.Step(-30,1000)==0 && precise.Step(-30,1020)==0 && precise.Step(-60,1040)==1, "Profile wheel dead zone accumulates small deltas");
+            if (!ClipboardReader.OpenClipboard(new System.Windows.Interop.WindowInteropHelper(tray).Handle)) throw new InvalidOperationException("Could not hold clipboard for contention test");
             var busyClock=Stopwatch.StartNew();
             try
             {
@@ -120,30 +125,66 @@ internal static class Verification
             main.MaximizeButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); await Settle(); Check(main.WindowState == WindowState.Maximized, "Caption maximize works");
             main.MaximizeButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); await Settle(); Check(main.WindowState == WindowState.Normal, "Caption restore works");
             Capture(main, output, "main-actions.png");
-            var library = Descendants<ListBox>(main).Single();
-            var originalId = main.EditingActionId;
-            var nameField = Descendants<TextBox>(main).Single(t => System.Windows.Automation.AutomationProperties.GetName(t) == "Name");
-            nameField.Text = "Edited draft"; main.DiscardDecision = () => false;
-            library.SelectedIndex = 1;
-            Check(main.EditingActionId == originalId && ((ActionDefinition)((ListBoxItem)library.SelectedItem).Tag).Id == originalId, "Cancelled discard restores action selection");
-            var librarySearch = Descendants<TextBox>(main).Single(t => System.Windows.Automation.AutomationProperties.GetName(t) == "Search action library");
-            librarySearch.Text = "ping"; Check(library.Items.Count == 1 && main.HasDraft && nameField.Text == "Edited draft", "Search filters while preserving the current draft"); librarySearch.Text = "";
-            nameField.Text = "";
-            Descendants<Button>(main).Single(b => b.Content is string label && label == "Duplicate").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-            Check(main.StatusText.Text.Contains("name"), "Duplicate reports invalid draft instead of throwing");
-            nameField.Text = "Generate password";
-            Descendants<Button>(main).Single(b => b.Content is string label && label == "Duplicate").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-            Check(main.HasDraft && !state.Config.Actions.Any(a => a.Id == main.EditingActionId), "Duplicate remains an unsaved protected draft");
-            main.Navigate("Preferences"); Check(main.PageTitle.Text == "Actions", "Unsaved duplicate blocks unwanted navigation");
-            main.DiscardDecision = () => true; main.Navigate("Preferences"); await Settle();
+            Check(main.Navigation.Orientation==Orientation.Horizontal && main.Navigation.Children.Count==5, "Main navigation uses five horizontal tabs");
+            var library=Descendants<WrapPanel>(main).Single(p=>p.Name=="ActionLibrary");
+            Check(library.Children.Count==3 && Descendants<ActionEditorWindow>(main).Count()==0, "Actions open as a grid without an embedded editor");
+            ((Button)library.Children[0]).RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); await Settle();
+            var editor=main.Editors.Single(); editor.DiscardDecision=()=>false;
+            var nameField=Descendants<TextBox>(editor).Single(t=>System.Windows.Automation.AutomationProperties.GetName(t)=="Name");
+            nameField.Text="Edited draft"; await Settle();
+            Check(editor.HasDraft && state.Config.Actions[0].Name=="Generate password", "Separate settings window retains an unsaved draft");
+            Check(Descendants<TextBlock>(editor.PreviewButton).Any(t=>t.Text=="Edited draft"), "Button preview updates from the current draft");
+            var previousResult=state.Result; editor.PreviewButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Check(state.Result==previousResult, "Clicking the preview never executes an action");
+            var previewPosition=editor.PreviewButton.TranslatePoint(new Point(),editor);
+            editor.FormScroll.ScrollToBottom(); await Settle();
+            Check(Math.Abs(previewPosition.Y-editor.PreviewButton.TranslatePoint(new Point(),editor).Y)<1 && editor.PreviewButton.IsVisible, "Button preview stays fixed while settings scroll");
+            Capture(editor,output,"action-editor-scrolled.png"); editor.FormScroll.ScrollToTop(); await Settle(); Capture(editor,output,"action-editor.png");
+            var librarySearch=Descendants<TextBox>(main).Single(t=>System.Windows.Automation.AutomationProperties.GetName(t)=="Search action library");
+            librarySearch.Text="ping"; Check(library.Children.Count==1 && editor.HasDraft && nameField.Text=="Edited draft", "Library search preserves a separate action draft"); librarySearch.Text="";
+            editor.Close(); Check(editor.IsVisible, "Cancelled discard keeps the action settings window open");
+            main.Close(); Check(main.IsVisible && editor.IsVisible, "Closing the main window protects owned action drafts");
+            nameField.Text="";
+            Descendants<Button>(editor).Single(b=>b.Content is string label && label=="Duplicate").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Check(editor.StatusText.Text.Contains("name"), "Duplicate reports invalid draft instead of throwing");
+            nameField.Text="Generate password";
+            Descendants<Button>(editor).Single(b=>b.Content is string label && label=="Duplicate").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            Check(editor.HasDraft && !state.Config.Actions.Any(a=>a.Id==editor.EditingActionId), "Duplicate remains an unsaved protected draft");
+            main.Navigate("Preferences");
+            Check(main.PageTitle.Text=="Preferences" && editor.HasDraft, "Top tab navigation leaves a separate draft intact");
+            editor.DiscardDecision=()=>true; editor.Close();
+            main.Navigate("Actions"); main.AddButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); await Settle();
+            var created=main.Editors.Single(); created.DiscardDecision=()=>true;
+            Check(created.PreviewButton.IsVisible && created.HasDraft, "New action opens with a sticky preview");
+            Capture(created,output,"action-new.png");
+            created.FitToWorkArea(new Rect(0,0,853,480)); await Settle();
+            Check(created.PreviewButton.IsVisible && created.FormScroll.ViewportHeight>50, "New action preview and fields fit a small work area"); Capture(created,output,"action-editor-small.png");
+            created.Close();
+            main.Navigate("Preferences"); await Settle();
+            var themeChoice=Descendants<ComboBox>(main).Single();
+            main.Activate(); themeChoice.Focus(); await Settle();
+            var choiceToggle=(System.Windows.Controls.Primitives.ToggleButton)themeChoice.Template.FindName("Toggle",themeChoice);
+            Check(themeChoice.IsKeyboardFocusWithin && choiceToggle.Background==Application.Current.FindResource("Hover"), "Closed choices show keyboard focus with a fill change and no outline");
             var defaults = Descendants<TextBox>(main).Single(t => System.Windows.Automation.AutomationProperties.GetName(t) == "Default length");
             defaults.Text = "20"; main.DiscardDecision = () => false; main.Navigate("Tools"); Check(main.PageTitle.Text == "Preferences" && main.HasDraft, "Preferences edits are protected on navigation");
             defaults.Text = "12"; Descendants<Button>(main).Single(b => b.Content is string label && label == "Save preferences").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             Check(!main.HasDraft, "Saving preferences clears the unsaved state");
             main.DiscardDecision = () => true;
+            main.Navigate("Preferences"); await Settle();
+            var pageScroll=Descendants<ScrollViewer>(main).First(s=>s.Content is StackPanel);
+            main.Height=440; await Settle(); pageScroll.ScrollToTop(); await Settle();
+            SmoothScrolling.Wheel(pageScroll,-120); await Task.Delay(220);
+            Check(pageScroll.VerticalOffset>0 && pageScroll.VerticalOffset<=30, "Wheel scroll moves a short eased distance");
+            var startOffset=pageScroll.VerticalOffset; for(var i=0;i<20;i++) SmoothScrolling.Wheel(pageScroll,-120); await Task.Delay(220);
+            Check(pageScroll.VerticalOffset-startOffset<=91, "Rapid wheel input cannot build an excessive scroll jump");
+            main.FitToWorkArea(workArea);
             main.Navigate("Profiles"); await Settle(); Capture(main, output, "main-profiles.png");
             main.Navigate("Preferences"); await Settle(); Capture(main, output, "main-preferences.png");
             main.Navigate("Actions"); main.Width = 720; main.Height = 480; await Settle(); Capture(main, output, "main-minimum.png");
+            var narrowGrid=Descendants<WrapPanel>(main).Single(w=>w.Name=="ActionLibrary");
+            var narrowTiles=narrowGrid.Children.Cast<Button>().ToArray();
+            var firstPosition=narrowTiles[0].TranslatePoint(new Point(),narrowGrid); var secondPosition=narrowTiles[1].TranslatePoint(new Point(),narrowGrid);
+            Check(Math.Abs(firstPosition.Y-secondPosition.Y)<1 && secondPosition.X>firstPosition.X && narrowTiles[0].ActualWidth*2>narrowGrid.ActualWidth*.85, "Minimum-width action grid uses two full columns without wasted row space");
             foreach (var area in new[] { new Rect(0, 0, 853, 480), new Rect(-1024, 0, 1024, 700), new Rect(0, 0, 1920, 1040) })
             {
                 main.FitToWorkArea(area); await Settle();
@@ -152,6 +193,11 @@ internal static class Verification
             }
             main.FitToWorkArea(workArea); main.Width = 720; main.Height = 480; await Settle();
             ThemeManager.Apply("Light"); await Settle(); Capture(main, output, "main-light.png"); Capture(tray, output, "tray-light.png"); ThemeManager.Apply("Dark");
+            foreach(var window in new Window[]{tray,net,main})
+            {
+                var bitmap=Render(window); var pixel=new byte[4]; bitmap.CopyPixels(new Int32Rect(0,0,1,1),pixel,4,0);
+                Check(window.AllowsTransparency && System.Windows.Shell.WindowChrome.GetWindowChrome(window) is null && pixel[3]==0, window.Title+" has transparent rounded corners without system chrome");
+            }
             main.CloseButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); Check(!main.IsVisible, "Caption close works"); main = null; net.Close(); net = null; tray.Hide();
             var timings = new List<double>(); for (var i = 0; i < 10; i++) { watch.Restart(); tray.Open(false); await Settle(); timings.Add(watch.Elapsed.TotalMilliseconds); tray.Hide(); }
             using var process = Process.GetCurrentProcess(); var cpuStart = process.TotalProcessorTime; var idleClock = Stopwatch.StartNew(); await Task.Delay(3000); process.Refresh();
@@ -161,7 +207,7 @@ internal static class Verification
         finally
         {
             if (originalClipboard is not null) Clipboard.SetDataObject(originalClipboard, true); else Clipboard.Clear();
-            if (main is not null) { main.DiscardDecision = () => true; main.Close(); } if (net is not null) net.Close(); tray?.Hide();
+            if (main is not null) { main.DiscardDecision = () => true; foreach(var editor in main.Editors) editor.DiscardDecision=()=>true; main.Close(); } if (net is not null) net.Close(); tray?.Hide();
         }
     }
     private static async Task Settle() { await Application.Current.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle); await Task.Delay(50); }
@@ -174,11 +220,14 @@ internal static class Verification
             foreach (var descendant in Descendants<T>(child)) yield return descendant;
         }
     }
+    private static RenderTargetBitmap Render(Window window)
+    {
+        window.UpdateLayout(); var content=(FrameworkElement)window.Content;
+        var bitmap=new RenderTargetBitmap((int)content.ActualWidth,(int)content.ActualHeight,96,96,PixelFormats.Pbgra32); bitmap.Render(content); return bitmap;
+    }
     private static void Capture(Window window, string folder, string name)
     {
-        window.UpdateLayout();
-        var content = (FrameworkElement)window.Content;
-        var bitmap = new RenderTargetBitmap((int)content.ActualWidth, (int)content.ActualHeight, 96, 96, PixelFormats.Pbgra32); bitmap.Render(content);
+        var bitmap=Render(window);
         var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(bitmap)); using var stream = File.Create(Path.Combine(folder, name)); encoder.Save(stream);
     }
 }

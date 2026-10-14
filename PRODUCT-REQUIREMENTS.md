@@ -167,3 +167,12 @@ Preserve moved tray position across reopening and persist it; double-click the b
 The compact footer switches profiles horizontally with arrows and mouse wheel. Show quick-action output in the compact panel first, then explicitly open its owning tool with the same result. Keep the saved-action heading stable.
 
 SableNet should be a compact panel with address followed by a separate optional port field. Presets fill the field without running. The primary check action belongs at the bottom and Enter invokes it. Show actual Windows ping and Test-NetConnection output. Inspect copied IPs, hostnames and websites on opening; once visible, retain the edited target until Paste is explicitly used. Infer a nearby common port in prose, or an explicitly labeled valid port, and ignore out-of-range loosely associated numbers. An invalid colon-delimited port remains a correction error. Multiple detected targets require a choice. Clipboard suggestions remain click-to-run.
+
+## UI refinement approved 2026-10-14
+- Remove gray native window frames and preserve rounded transparent outer corners across tray, SableNet, main and action settings.
+- Open configuration from the tray header Settings control; remove the footer Open app control.
+- Give profile-wheel switching a dead zone and short settling interval; bound and ease content scrolling while honoring reduced motion.
+- Treat password generation, application launching and future workflows as core SableKit capabilities, not separate installed tools.
+- Default the main window to an action grid with simple horizontal top tabs. Selecting an action opens a separate settings window.
+- Keep a live, non-executing button preview visible while the new/edit action form scrolls. Protect unsaved drafts independently.
+- Use fill/foreground changes for visible keyboard focus instead of click outlines on buttons and navigation.

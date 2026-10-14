@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-13T16:50:22Z",
+  "generatedAt": "2026-10-14",
   "title": "Design System: SableKit",
   "extensions": {
     "colorMeta": {
@@ -353,6 +353,11 @@
         "name": "copied-feedback",
         "value": "WPF DoubleAnimation: opacity 0.65 → 1; 140 ms; FillBehavior.Stop",
         "purpose": "Only while visible, application reduced motion is off, and SystemParameters.ClientAreaAnimation is true."
+      },
+      {
+        "name": "content-scroll",
+        "value": "140ms cubic ease-out; usual27DIP wheel step; queued travel bounded90DIP",
+        "purpose": "Stop when hidden/unloaded/input changes; honor app and OS reduced motion."
       }
     ],
     "breakpoints": [],
@@ -369,21 +374,28 @@
         "src/SableKit.Desktop/MainWindow.xaml.cs",
         "src/SableKit.Desktop/NetworkWindow.xaml",
         "src/SableKit.Desktop/Icon.cs",
-        "src/SableKit.Desktop/NativeWindow.cs"
+        "src/SableKit.Desktop/NativeWindow.cs",
+        "src/SableKit.Desktop/ActionEditorWindow.xaml",
+        "src/SableKit.Desktop/ActionEditorWindow.xaml.cs",
+        "src/SableKit.Desktop/ActionVisual.cs",
+        "src/SableKit.Desktop/SmoothScrolling.cs",
+        "src/SableKit.Desktop/ProfileWheelGate.cs"
       ],
       "alphaEncoding": "Frontmatter panel colors use CSS RRGGBBAA; WPF uses AARRGGBB. RGB and alpha are unchanged.",
       "rampProvenance": "Tonal ramps are synthetic OKLCH display aids only. They are not runtime palette values, established design tokens or new palette commitments.",
-      "material": "Native transient-window system backdrop request for both compact panels and main-window backdrop for the configuration window on Windows build 22621+ outside high contrast and when enabled. Native border suppression is requested on Windows build 22000+. API acceptance does not verify compositor appearance.",
+      "material": "Layered WPF windows with transparent rounded shells and no WindowChrome. NativeWindow skips DWM backdrop. Alpha translucency only; the original desktop-blur requirement remains unmet. Compositor edges are unverified.",
       "highContrast": "Runtime brushes map to SystemColors WindowBrush, WindowTextBrush and HighlightBrush. Native behavior remains partially unverified.",
-      "verification": "0.1.2 documentation refresh: 17 updated diagnostic client-content captures; 56 in-process WPF checks passed before the asynchronous clipboard change; final clipboard retest is blocked by Windows access denial. In-process WPF checks and captures do not validate physical mouse interaction, compositor appearance, live DPI/monitor changes, high contrast or Windows 10. See VERIFICATION.md for recorded run results.",
+      "verification": "0.1.3: 76 WPF checks, 46 core checks, 21 client captures. Initial independent review found grid/focus defects corrected with local checks. Independent confirmation and documenter hit usage limits. No final independent sign-off. Physical input, compositor, DPI, high contrast and Windows10 remain unverified.",
       "detector": "Web/CSS detector is not applicable to native WPF source. Sidecar previews are not the shipped interface.",
-      "layout": "Prototype 0.1.2: main max 920x640 DIP, capped 90%/88% of monitor work-area width/height; 40-DIP caption row; 154-DIP sidebar; 36/64% library/editor split, unchanged. Tray is 336x404 with a 38-DIP header. SableNet is fixed 356x454 with a 32-DIP header. Both compact shells use 20-DIP radii, no outer stroke and WPF left/top/right/bottom padding 14/12/14/14. Main WindowChrome remains 12 DIP. Grid names truncate to fit 72-DIP tiles.",
-      "headerControls": "Installed Segoe MDL2 Assets Search E721, Pin E718, Close E8BB. Borderless 28x28-DIP controls with 14-DIP glyphs and 8-DIP radius. Muted glyph brightens to Text on hover/keyboard focus; no focus underline. Active search/pin uses Hover fill without changing the brand title. Pressed glyph opacity .55; disabled control opacity .3. Main caption controls override bounds to 40x32 DIP. Windows font is not redistributed.",
+      "layout": "Main up to920x640 capped90%/88% work area,38-DIP caption,46-DIP top tabs; default118-DIP action grid tiles with12-DIP gaps,2columns at720. Separate660x650 editor,82-DIP sticky preview, fixed commands. Tray336x404, SableNet356x454. All shells radius20, no WindowChrome.",
+      "headerControls": "Installed Segoe MDL2 Assets Search E721, Pin E718, Close E8BB. Borderless 28x28-DIP controls with 14-DIP glyphs and 8-DIP radius. Muted glyph brightens to Text on hover/keyboard focus; no focus underline. Active search/pin uses Hover fill without changing the brand title. Pressed glyph opacity .55; disabled control opacity .3. Main caption controls override bounds to 36x28 DIP. Windows font is not redistributed.",
       "icons": "All named application icons in Icon.cs now render installed Segoe MDL2 Assets glyphs at requested dimensions. Browser preview SVGs are illustrative substitutes, not the shipped native glyph rendering.",
       "placement": "Tray and SableNet persist dragged placement separately and reset placement on a brand double-click. Placement restoration clamps to SystemParameters.WorkArea; physical multi-monitor/DPI behavior remains unverified.",
-      "profileCarousel": "Tray footer cycles profiles with previous/next arrows, mouse wheel and left/right keys on the profile button; clicking the profile name advances. Previous/next arrows disable for a single profile.",
+      "profileCarousel": "Arrows, click and keyboard cycle profiles. Wheel accumulates120 units and applies420ms cooldown. Repeated keydown ignored; single-profile arrows disabled.",
       "results": "Tray quick results replace the action area, then hand off network target/output to SableNet or other details to Activity. Successful password copies retain centered Copied feedback. Read-only output is Consolas 10 DIP in the tray and 11 DIP in SableNet, with no wrapping and horizontal/vertical scrollbars. TextBox templates honor BorderThickness=0 on output fields.",
-      "network": "SableNet has a 13-DIP brand, Address and optional Port fields, DNS action and SSH/HTTP/HTTPS/RDP/SMB presets that populate Port without running. Bottom Check connection becomes Stop while running. Native ping, Test-NetConnection and nslookup output occupies the flexible result area. Multiple detected addresses show an unselected Choose detected address prompt; selecting preserves choices, while an explicit target/result handoff clears and hides them."
+      "network": "SableNet has a 13-DIP brand, Address and optional Port fields, DNS action and SSH/HTTP/HTTPS/RDP/SMB presets that populate Port without running. Bottom Check connection becomes Stop while running. Native ping, Test-NetConnection and nslookup output occupies the flexible result area. Multiple detected addresses show an unselected Choose detected address prompt; selecting preserves choices, while an explicit target/result handoff clears and hides them.",
+      "focus": "No button/tab focus outlines; fill or foreground cues. Text fields and closed choices use Hover fill on keyboard focus.",
+      "preview": "ActionVisual shared by tray and sticky live list/grid draft preview. Preview never executes; Test run is explicit. Separate editors protect unsaved drafts."
     }
   },
   "components": [
@@ -393,39 +405,39 @@
       "refersTo": "button-primary",
       "description": "Browser illustration of the WPF primary style; DIP measurements translated to CSS pixels.",
       "html": "<button class=\"ds-button ds-primary\">Save action</button>",
-      "css": ".ds-primary{font-family:'Segoe UI',sans-serif;font-size:13px;border:1px solid transparent;border-radius:12px;min-height:32px;padding:8px 12px;cursor:pointer;background:#F4F4F5;color:#19191C;font-weight:600}.ds-button:hover{background:#333337;color:#F4F4F5}.ds-button:focus-visible{outline:1px solid #F4F4F5;outline-offset:-3px;border-color:#F4F4F5}.ds-button:active{opacity:.72}.ds-button:disabled{opacity:.45;cursor:default}"
+      "css": ".ds-primary{font-family:'Segoe UI',sans-serif;font-size:13px;border:1px solid transparent;border-radius:12px;min-height:32px;padding:8px 12px;cursor:pointer;background:#F4F4F5;color:#19191C;font-weight:600}.ds-button:hover{background:#333337;color:#F4F4F5}.ds-button:focus-visible{outline:none;background:#333337;color:#F4F4F5}.ds-button:active{opacity:.72}.ds-button:disabled{opacity:.45;cursor:default}"
     },
     {
       "name": "Filled button",
       "kind": "button",
       "refersTo": "button-filled",
-      "description": "Secondary action with an inset surface and thin outline.",
+      "description": "Secondary action with an inset surface and no outline.",
       "html": "<button class=\"ds-button ds-filled\">Test run</button>",
-      "css": ".ds-filled{font-family:'Segoe UI',sans-serif;font-size:13px;border:1px solid transparent;border-radius:12px;min-height:32px;padding:8px 12px;cursor:pointer;background:#232326;color:#F4F4F5;border-color:#434348}.ds-button:hover{background:#333337;color:#F4F4F5}.ds-button:focus-visible{outline:1px solid #F4F4F5;outline-offset:-3px;border-color:#F4F4F5}.ds-button:active{opacity:.72}.ds-button:disabled{opacity:.45;cursor:default}"
+      "css": ".ds-filled{font-family:'Segoe UI',sans-serif;font-size:13px;border:1px solid transparent;border-radius:12px;min-height:32px;padding:8px 12px;cursor:pointer;background:#232326;color:#F4F4F5;border-color:transparent}.ds-button:hover{background:#333337;color:#F4F4F5}.ds-button:focus-visible{outline:none;background:#333337;color:#F4F4F5}.ds-button:active{opacity:.72}.ds-button:disabled{opacity:.45;cursor:default}"
     },
     {
       "name": "Ghost button",
       "kind": "button",
       "refersTo": "button-ghost",
       "description": "Quiet action; browser sample has a charcoal backing for legibility.",
-      "html": "<div class=\"ds-canvas\"><button class=\"ds-button ds-ghost\">Open app</button></div>",
-      "css": ".ds-canvas{background:#18181B;padding:8px}.ds-ghost{font-family:'Segoe UI',sans-serif;font-size:13px;border:1px solid transparent;border-radius:12px;min-height:32px;padding:8px 12px;cursor:pointer;background:transparent;color:#F4F4F5}.ds-button:hover{background:#333337;color:#F4F4F5}.ds-button:focus-visible{outline:1px solid #F4F4F5;outline-offset:-3px;border-color:#F4F4F5}.ds-button:active{opacity:.72}.ds-button:disabled{opacity:.45;cursor:default}"
+      "html": "<div class=\"ds-canvas\"><button class=\"ds-button ds-ghost\">Retry</button></div>",
+      "css": ".ds-canvas{background:#18181B;padding:8px}.ds-ghost{font-family:'Segoe UI',sans-serif;font-size:13px;border:1px solid transparent;border-radius:12px;min-height:32px;padding:8px 12px;cursor:pointer;background:transparent;color:#F4F4F5}.ds-button:hover{background:#333337;color:#F4F4F5}.ds-button:focus-visible{outline:none;background:#333337;color:#F4F4F5}.ds-button:active{opacity:.72}.ds-button:disabled{opacity:.45;cursor:default}"
     },
     {
       "name": "Action field",
       "kind": "input",
       "refersTo": "input",
-      "description": "Persistent label with rounded input; browser focus illustrates the native border treatment.",
+      "description": "Persistent label with rounded input; keyboard focus uses tonal fill.",
       "html": "<label class=\"ds-field-label\" for=\"ds-action-name\">Name</label><input class=\"ds-field\" id=\"ds-action-name\" value=\"Copy password\"/>",
-      "css": ".ds-field-label{display:block;font:600 12px 'Segoe UI',sans-serif;color:#F4F4F5;background:#18181B;padding:16px 0 7px}.ds-field{font:13px 'Segoe UI',sans-serif;background:#232326;color:#F4F4F5;border:1px solid #434348;border-radius:12px;padding:8px 10px;min-height:36px}.ds-field:focus-visible{outline:none;border-color:#F4F4F5}.ds-field::placeholder{color:#ADADB6}.ds-field:disabled{opacity:.45}"
+      "css": ".ds-field-label{display:block;font:600 12px 'Segoe UI',sans-serif;color:#F4F4F5;background:#18181B;padding:16px 0 7px}.ds-field{font:13px 'Segoe UI',sans-serif;background:#232326;color:#F4F4F5;border:1px solid #434348;border-radius:12px;padding:8px 10px;min-height:36px}.ds-field:focus-visible{outline:none;background:#333337}.ds-field::placeholder{color:#ADADB6}.ds-field:disabled{opacity:.45}"
     },
     {
       "name": "Selected navigation",
       "kind": "nav",
       "refersTo": "navigation-selected",
-      "description": "Selected destination in the main sidebar.",
+      "description": "Selected simple horizontal top tab; illustrative browser sample.",
       "html": "<nav class=\"ds-nav\"><button class=\"ds-nav-item\" aria-current=\"page\">Actions</button></nav>",
-      "css": ".ds-nav{background:#232326;padding:8px;width:160px}.ds-nav-item{font-family:'Segoe UI',sans-serif;font-size:13px;border:1px solid transparent;border-radius:12px;min-height:32px;padding:8px 12px;cursor:pointer;width:100%;text-align:left;padding:11px 10px;background:#333337;color:#F4F4F5}.ds-nav-item:hover{background:#333337}.ds-nav-item:focus-visible{outline:1px solid #F4F4F5;outline-offset:-3px}.ds-nav-item:active{opacity:.72}"
+      "css": ".ds-nav{display:flex;background:#18181B;padding:8px}.ds-nav-item{font:600 13px 'Segoe UI';border:0;border-radius:12px;padding:7px 14px;background:#333337;color:#F4F4F5}.ds-nav-item:focus-visible{outline:none;background:#333337}"
     },
     {
       "name": "Pinned action",
@@ -433,7 +445,7 @@
       "refersTo": "action-list",
       "description": "Fixed-height list action with quiet metadata and shortcut hint.",
       "html": "<div class=\"ds-action-canvas\"><button class=\"ds-action\"><span class=\"ds-action-text\"><strong>Copy password</strong><small>24 characters · copy</small></span><span class=\"ds-hint\">Alt 1</span></button></div>",
-      "css": ".ds-action-canvas{background:#18181B;padding:4px;width:304px}.ds-action{font-family:'Segoe UI',sans-serif;display:flex;align-items:center;justify-content:space-between;width:100%;height:46px;border:1px solid transparent;border-radius:12px;padding:6px 9px;background:transparent;color:#F4F4F5;cursor:pointer;text-align:left}.ds-action-text strong{display:block;font-size:12px;font-weight:600}.ds-action small,.ds-hint{font-size:10px;color:#ADADB6}.ds-action small{display:block;margin-top:3px}.ds-action:hover{background:#333337}.ds-action:focus-visible{outline:1px solid #F4F4F5;outline-offset:-3px}.ds-action:active{opacity:.72}"
+      "css": ".ds-action-canvas{background:#18181B;padding:4px;width:304px}.ds-action{font-family:'Segoe UI',sans-serif;display:flex;align-items:center;justify-content:space-between;width:100%;height:46px;border:1px solid transparent;border-radius:12px;padding:6px 9px;background:transparent;color:#F4F4F5;cursor:pointer;text-align:left}.ds-action-text strong{display:block;font-size:12px;font-weight:600}.ds-action small,.ds-hint{font-size:10px;color:#ADADB6}.ds-action small{display:block;margin-top:3px}.ds-action:hover{background:#333337}.ds-action:focus-visible{outline:none;background:#333337}.ds-action:active{opacity:.72}"
     },
     {
       "name": "Copied action",
@@ -441,13 +453,13 @@
       "refersTo": "action-list",
       "description": "Centered feedback preserves the list action height. The inline SVG is a browser illustration of the native MDL2 check glyph; this static sample does not execute a clipboard write.",
       "html": "<div class=\"ds-copied-canvas\"><button class=\"ds-copied\"><svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.45\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12 L10 17 L20 6\"/></svg><span>Copied</span></button></div>",
-      "css": ".ds-copied-canvas{background:#18181B;padding:4px;width:304px}.ds-copied{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;height:46px;font:600 13px 'Segoe UI',sans-serif;background:transparent;color:#F4F4F5;border:1px solid transparent;border-radius:12px;padding:6px 9px}.ds-copied:hover{background:#333337}.ds-copied:focus-visible{outline:1px solid #F4F4F5;outline-offset:-3px}.ds-copied:active{opacity:.72}"
+      "css": ".ds-copied-canvas{background:#18181B;padding:4px;width:304px}.ds-copied{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;height:46px;font:600 13px 'Segoe UI',sans-serif;background:transparent;color:#F4F4F5;border:1px solid transparent;border-radius:12px;padding:6px 9px}.ds-copied:hover{background:#333337}.ds-copied:focus-visible{outline:none;background:#333337}.ds-copied:active{opacity:.72}"
     },
     {
       "name": "Configuration preview",
-      "kind": "card",
+      "kind": "custom",
       "refersTo": "configuration-preview",
-      "description": "Simple inset preview of a draft action name, without an added shadow.",
+      "description": "Illustrative draft name only. Actual WPF sticky preview uses ActionVisual with list/grid mode, icon and metadata; no execution.",
       "html": "<div class=\"ds-preview\">Copy password</div>",
       "css": ".ds-preview{font:600 13px 'Segoe UI',sans-serif;border-radius:12px;background:#232326;color:#F4F4F5;padding:12px 14px}"
     },
@@ -469,7 +481,7 @@
   ],
   "narrative": {
     "northStar": "Smoky black, neutral charcoal and white",
-    "overview": "SableKit uses the owner's chosen smoky black, neutral charcoal and white direction for a modern, enterprise-quality desktop utility. Subtle Raycast influence and the compact pin/search/click-to-act familiarity of SableLatch inform the implementation. Native Segoe UI, quiet metadata, thin outlines and restrained rounded controls keep actions readable.\n\nThis is an extraction of prototype 0.1.2, implemented directly in WPF with the owner's approved SableLatch-style native icons and compact header behavior. It records the current code, not a new branding commitment. Tonal layering supplies the dependable structure; native Windows material is an enhancement whose compositor appearance still needs validation.",
+    "overview": "Prototype0.1.3 preserves the neutral smoky SableLatch-inspired WPF direction. Main action grid and top tabs, separate settings windows and sticky live previews follow the approved refinement. Layered shells remove native frames but currently supply alpha translucency without desktop blur.",
     "keyCharacteristics": [
       "Compact controls with clear action labels and quieter supporting text.",
       "Charcoal and white emphasis, with semantic status resources.",
@@ -507,5 +519,5 @@
       "Don't describe the prototype or its lightweight performance goal as ship-validated."
     ]
   },
-  "updatedAt": "2026-10-13"
+  "updatedAt": "2026-10-14"
 }

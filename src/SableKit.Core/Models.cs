@@ -22,7 +22,7 @@ public sealed class ActionDefinition
     public string Target { get; set; } = "";
     public PanelBehavior PanelBehavior { get; set; }
     public string Icon => Kind switch { ActionKind.Password => "key", ActionKind.Network => "network", _ => "terminal" };
-    public string ToolName => Kind switch { ActionKind.Password => "Passwords", ActionKind.Network => "SableNet", _ => "Applications" };
+    public string ToolName => Kind == ActionKind.Network ? "SableNet" : "SableKit";
 }
 
 public sealed class Profile

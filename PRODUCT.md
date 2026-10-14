@@ -21,3 +21,6 @@ Real execution and truthful status; lazy windows; local data; explicit inheritan
 
 ## Accessibility
 Keyboard navigation, visible focus, named controls, reduced motion, scalable text, theme choices and high-contrast fallback. Native Windows affordances take priority over ornamental motion.
+
+## Approved refinement - 2026-10-14
+The owner requested no native gray frame, top settings as the sole compact configuration entry, calmer scrolling and a gated profile wheel. The main default view is an action grid with simple horizontal tabs; action settings open separately with a sticky live button preview. Password generation and application launching are built-in SableKit capabilities, as future workflows will be, rather than separate tool shortcuts. Preserve the smoky neutral design and compact SableLatch-inspired behavior. The current layered-shell implementation provides transparent corners and an alpha surface, not desktop blur.

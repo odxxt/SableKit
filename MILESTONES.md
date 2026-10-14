@@ -1,6 +1,6 @@
 # Implementation milestones
 
-Status on 2026-10-13: the new repository was inspected, the owner approved direct WPF implementation, and prototype 0.1.2 now provides working portions of stages 1, 2, 3 and 5. A self-contained Windows x64 binary exists. Core and in-process WPF checks ran on Windows 11. See [implementation status](IMPLEMENTATION-STATUS.md) and [verification](VERIFICATION.md) for the precise boundary. No entire stage is declared complete while its required checks or features remain outstanding.
+Status on 2026-10-14: the new repository was inspected, the owner approved direct WPF implementation, and prototype 0.1.3 now provides working portions of stages 1, 2, 3 and 5. A self-contained Windows x64 binary exists. Core and in-process WPF checks ran on Windows 11. See [implementation status](IMPLEMENTATION-STATUS.md) and [verification](VERIFICATION.md) for the precise boundary. No entire stage is declared complete while its required checks or features remain outstanding.
 
 ## Stage 0 — establish the actual baseline
 

@@ -22,6 +22,7 @@ public partial class App : Application
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        SmoothScrolling.Register();
         DisableBackdrop = e.Args.Contains("--opaque");
         if (e.Args.Contains("--software-rendering")) System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
         var verification = e.Args.Length == 2 && e.Args[0] == "--verify";

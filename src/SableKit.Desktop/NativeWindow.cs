@@ -39,6 +39,7 @@ internal static class NativeWindow
 
     public static void Apply(Window window, bool compact)
     {
+        if (window.AllowsTransparency) { window.Background=Brushes.Transparent; return; }
         if (!OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000)) return;
         var handle = new WindowInteropHelper(window).Handle;
         var dark = ThemeManager.IsDark ? 1 : 0; DwmSetWindowAttribute(handle, 20, ref dark, 4);

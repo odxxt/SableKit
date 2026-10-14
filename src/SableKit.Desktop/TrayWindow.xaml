@@ -1,5 +1,4 @@
-<Window x:Class="SableKit.Desktop.TrayWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SableKit.Desktop" xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework" Style="{StaticResource {x:Type Window}}" Title="SableKit quick actions" Width="336" Height="404" ResizeMode="NoResize" WindowStyle="None" ShowInTaskbar="False">
- <shell:WindowChrome.WindowChrome><shell:WindowChrome CaptionHeight="0" ResizeBorderThickness="0" CornerRadius="20" GlassFrameThickness="0"/></shell:WindowChrome.WindowChrome>
+<Window x:Class="SableKit.Desktop.TrayWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:SableKit.Desktop" xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework" Style="{StaticResource {x:Type Window}}" Title="SableKit quick actions" Width="336" Height="404" ResizeMode="NoResize" WindowStyle="None" AllowsTransparency="True" Background="Transparent" ShowInTaskbar="False">
  <Border x:Name="Shell" Background="{DynamicResource PanelSurface}" BorderThickness="0" CornerRadius="20" Padding="14,12,14,14">
  <Grid><Grid.RowDefinitions><RowDefinition Height="38"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition/><RowDefinition Height="36"/><RowDefinition Height="32"/></Grid.RowDefinitions>
   <Grid MouseLeftButtonDown="DragHeader"><TextBlock x:Name="PanelTitle" Text="SableKit" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/><StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
@@ -21,18 +20,15 @@
    <TextBox x:Name="ResultOutput" Grid.Row="1" FontFamily="Consolas" FontSize="10" IsReadOnly="True" AcceptsReturn="True" BorderThickness="0" TextWrapping="NoWrap" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" VerticalContentAlignment="Top" Padding="8" AutomationProperties.Name="Quick action output"/>
    <Grid Grid.Row="2"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock x:Name="ResultStatus" Foreground="{DynamicResource Muted}" FontSize="10" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/><Button x:Name="ResultButton" Grid.Column="1" Content="Open SableNet" FontSize="11" Padding="8,3" MinHeight="28" Click="OpenResult"/></Grid>
   </Grid>
-  <UniformGrid Grid.Row="4" Columns="3" Margin="0,4,0,2">
-   <Button Padding="4,0" BorderThickness="0" Click="OpenPasswords" ToolTip="Password defaults"><StackPanel Orientation="Horizontal"><local:Icon Kind="key" Width="14" Height="14" Margin="0,0,6,0"/><TextBlock Text="Passwords" FontSize="11"/></StackPanel></Button>
-   <Button Padding="4,0" BorderThickness="0" Click="OpenNetwork" ToolTip="Open SableNet"><StackPanel Orientation="Horizontal"><local:Icon Kind="network" Width="14" Height="14" Margin="0,0,6,0"/><TextBlock Text="SableNet" FontSize="11"/></StackPanel></Button>
-   <Button Padding="4,0" BorderThickness="0" Click="OpenTools" ToolTip="Tools"><StackPanel Orientation="Horizontal"><local:Icon Kind="grid" Width="14" Height="14" Margin="0,0,6,0"/><TextBlock Text="Tools" FontSize="11"/></StackPanel></Button>
-  </UniformGrid>
-  <Grid Grid.Row="5"><Grid.ColumnDefinitions><ColumnDefinition Width="176"/><ColumnDefinition/></Grid.ColumnDefinitions>
+  <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,4,0,2">
+   <Button Padding="12,0" BorderThickness="0" Click="OpenNetwork" ToolTip="Open SableNet"><StackPanel Orientation="Horizontal"><local:Icon Kind="network" Width="14" Height="14" Margin="0,0,6,0"/><TextBlock Text="SableNet" FontSize="11"/></StackPanel></Button>
+  </StackPanel>
+  <Grid Grid.Row="5" Width="190" HorizontalAlignment="Center">
    <Grid x:Name="ProfileStrip" MouseWheel="ProfileWheel" ToolTip="Switch profiles with arrows or the mouse wheel"><Grid.ColumnDefinitions><ColumnDefinition Width="28"/><ColumnDefinition/><ColumnDefinition Width="28"/></Grid.ColumnDefinitions>
     <Button x:Name="PreviousProfile" Style="{StaticResource HeaderButton}" Content="&#xE76B;" AutomationProperties.Name="Previous profile" Click="Previous"/>
     <Button x:Name="ProfileButton" Grid.Column="1" BorderThickness="0" Padding="3,0" Click="Next" PreviewKeyDown="ProfileKeys" AutomationProperties.Name="Active profile"><TextBlock x:Name="ProfileName" FontSize="11" TextTrimming="CharacterEllipsis"/></Button>
     <Button x:Name="NextProfile" Grid.Column="2" Style="{StaticResource HeaderButton}" Content="&#xE76C;" AutomationProperties.Name="Next profile" Click="Next"/>
    </Grid>
-   <Button Grid.Column="1" Click="OpenMain" Padding="4,0" BorderThickness="0" HorizontalAlignment="Right"><StackPanel Orientation="Horizontal"><TextBlock Text="Open app" FontSize="11" Foreground="{DynamicResource Muted}" Margin="0,0,6,0"/><local:Icon Kind="expand" Width="12" Height="12"/></StackPanel></Button>
   </Grid>
  </Grid></Border>
 </Window>
