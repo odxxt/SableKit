@@ -1,5 +1,5 @@
 <Window x:Class="SableKit.Desktop.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Style="{StaticResource {x:Type Window}}" Title="SableKit" Width="920" Height="640" MinWidth="720" MinHeight="440" WindowStyle="None" AllowsTransparency="True" Background="Transparent" ResizeMode="CanResize" WindowStartupLocation="Manual">
- <Border x:Name="Shell" Background="{DynamicResource PanelSurface}" CornerRadius="20" Padding="22,8,22,18">
+ <Border x:Name="Shell" Background="{DynamicResource Surface}" CornerRadius="20" Padding="22,8,22,18">
   <Grid><Grid.RowDefinitions><RowDefinition Height="38"/><RowDefinition Height="46"/><RowDefinition/></Grid.RowDefinitions>
    <Grid x:Name="TitleBar" MouseLeftButtonDown="DragHeader"><TextBlock Text="SableKit" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
@@ -12,7 +12,7 @@
    <Grid Grid.Row="2" Margin="0,14,0,0"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
     <Grid Margin="0,0,0,18"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
      <StackPanel><TextBlock x:Name="PageTitle" Text="Actions" FontSize="24" FontWeight="SemiBold"/><TextBlock x:Name="PageSubtitle" TextWrapping="Wrap" Foreground="{DynamicResource Muted}" Margin="0,5,0,0"/></StackPanel>
-     <Button Grid.Column="1" x:Name="AddButton" Margin="12,0,0,0" VerticalAlignment="Center" Content="+  New action" Style="{StaticResource PrimaryButton}" Padding="18,10" Click="AddAction"/>
+     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center"><Button x:Name="LibrarySearchButton" Style="{StaticResource HeaderButton}" Content="&#xE721;" ToolTip="Search actions" AutomationProperties.Name="Toggle action search" Click="ToggleLibrarySearch"/><Button x:Name="AddButton" Margin="12,0,0,0" VerticalAlignment="Center" Content="+  New action" Style="{StaticResource PrimaryButton}" Padding="18,10" Click="AddAction"/></StackPanel>
     </Grid>
     <ContentControl x:Name="PageContent" Grid.Row="1" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
     <TextBlock x:Name="StatusText" Grid.Row="2" Margin="0,10,0,0" Foreground="{DynamicResource Muted}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>

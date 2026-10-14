@@ -19,6 +19,7 @@ public partial class TrayWindow : Window
         placement=new PanelPlacement(this,Path.Combine(state.DataDirectory,"window.json"));
         SourceInitialized+=(_,_)=>NativeWindow.Apply(this,true);
         Deactivated+=(_,_)=>HandleDeactivated(NativeWindow.PointerOverTray());
+        IsVisibleChanged+=(_,_)=>{if(!IsVisible)ProfilePopup.IsOpen=false;};
         Closing+=(_,e)=>{ if(!App.Exiting){ e.Cancel=true;Hide(); } };
         PreviewKeyDown+=KeyDownPanel;
         state.Changed+=Refresh; state.ResultChanged+=UpdateResult; state.HideRequested+=Hide;
@@ -65,11 +66,22 @@ public partial class TrayWindow : Window
         }
         catch(System.Runtime.InteropServices.COMException) { }
     }
+    private void ChooseProfile(object sender,RoutedEventArgs e)
+    {
+        ProfileChoices.Children.Clear();
+        foreach(var profile in state.Config.Profiles)
+        {
+            var button=Ui.Button(profile.Name,()=>{state.Config.ActiveProfileId=profile.Id;state.Save();ProfilePopup.IsOpen=false;},"");
+            button.HorizontalContentAlignment=HorizontalAlignment.Left;button.Margin=new Thickness(0,2,0,2);button.SetResourceReference(BackgroundProperty,profile.Id==state.Config.ActiveProfileId?"Hover":"Inset");
+            ProfileChoices.Children.Add(button);
+        }
+        ProfilePopup.IsOpen=!ProfilePopup.IsOpen;
+    }
     public void Refresh()
     {
         ProfileName.Text=state.Config.ActiveProfile.Name;
         ProfileButton.ToolTip=$"{state.Config.ActiveProfile.Name} · {state.Config.Profiles.FindIndex(p=>p.Id==state.Config.ActiveProfileId)+1} of {state.Config.Profiles.Count}";
-        PreviousProfile.IsEnabled=NextProfile.IsEnabled=state.Config.Profiles.Count>1;
+        ProfilePopup.IsOpen=false;
         RenderActions();
     }
     private void RenderActions()

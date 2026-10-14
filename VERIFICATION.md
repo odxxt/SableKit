@@ -1,3 +1,27 @@
+# Verification - prototype 0.1.4 main-window and editing redesign
+
+Recorded 2026-10-14 on Windows 11 build 26200, SDK 10.0.401 / runtime 10.0.12. Release build and self-contained x64 publish passed.
+
+## Current evidence
+
+**94 in-process WPF checks and 46 core checks passed**, with 28 diagnostic client captures. New checks cover: SableLatch-matching 342 x 411 compact dimensions within device-pixel rounding; direct profile choice and dismissal; fixed tab positions across all five pages; fully opaque main/editor surfaces; expandable action search; shorter/wider editor; single-editor reuse with cancelled-discard protection; new-action purpose choice; sticky side preview; operation fields directly available in Setup; and readable panel-behavior choices. Earlier real clipboard, native loopback network output, cancellation, saved placement, action/profile and draft checks still pass.
+
+Visual inspection covered the action chooser, Setup and Behavior, application and network editing, normal/small editor, main Actions/Profiles/Preferences/Tools/Activity, and compact list/grid. Final confirmation checked the readable enum labels and simplified planned-tools disclosure. No independent design approval is claimed for 0.1.4.
+
+The harness uses real WPF controls, clipboard APIs and local command processes, with routed/programmatic input. Captures are RenderTargetBitmap client images. They do not prove physical tray/menu interaction, actual compositor edges, screen-reader behavior or live monitor/DPI transitions. These still require hands-on validation, along with Windows 10 and clean-machine portability.
+
+## Performance sample
+
+One separate Release panel-only process measured startup to UI idle at 1,577 ms; five warm opens at 0.7–1.3 ms. Visible working set/private bytes were 152.1/78.3 MiB, hidden 152.5/79.0 MiB. Both five-second CPU samples measured 0% of one logical core. These are short local samples, not display-presentation timings or performance guarantees. Main/editor windows were not created by this probe. Runtime-inclusive package size is reported separately.
+
+## Scope
+
+Main/editor content is now intentionally opaque, as requested. Compact shells remain translucent without real desktop blur. Only one editor can exist per main window; switching actions protects unsaved changes. New action offers only implemented types. SableType, SableLatch/security, workflows and the addon catalog remain planned. The running older app was not terminated or replaced.
+
+Prior-version results below are historical and do not override this build's behavior or limitations.
+
+---
+
 # Verification - prototype 0.1.3 action-grid and shell refinement
 
 Recorded 2026-10-14 on Windows 11 build 26200, SDK 10.0.401 / runtime 10.0.12. Release WPF build and self-contained x64 publish passed.

@@ -176,3 +176,6 @@ SableNet should be a compact panel with address followed by a separate optional 
 - Default the main window to an action grid with simple horizontal top tabs. Selecting an action opens a separate settings window.
 - Keep a live, non-executing button preview visible while the new/edit action form scrolls. Protect unsaved drafts independently.
 - Use fill/foreground changes for visible keyboard focus instead of click outlines on buttons and navigation.
+
+## Further approved refinement - 2026-10-14
+The owner rejected the cramped action form and the non-Actions main pages. Main/editor content must be opaque; action settings shorter and wider, with one editor reused when switching actions and unsaved drafts protected. Keep the action grid, make search expandable, and give top tabs fixed positions. Reorganize Profiles, Preferences, Activity and Tools around their actual tasks; start new actions with a clear choice of purpose. Match SableLatch's 342 x 411 DIP compact size and 18-DIP default/reset offset, add an actions/tools separator, move the profile control to the side without paired arrows, and replace list/grid view glyphs.

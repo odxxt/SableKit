@@ -20,6 +20,14 @@ public sealed class Icon : FrameworkElement
     protected override void OnRender(DrawingContext dc)
     {
         if (ActualWidth <= 0 || ActualHeight <= 0) return;
+        if(Kind is "grid" or "list")
+        {
+            var pen=new Pen(Stroke,1.25);var scale=Math.Min(ActualWidth,ActualHeight)/18;
+            dc.PushTransform(new ScaleTransform(scale,scale));
+            if(Kind=="grid") foreach(var x in new[]{2.0,10.0}) foreach(var y in new[]{2.0,10.0}) dc.DrawRoundedRectangle(null,pen,new Rect(x,y,6,6),1,1);
+            else foreach(var y in new[]{3.0,9.0,15.0}) {dc.DrawRoundedRectangle(Stroke,null,new Rect(2,y-1,2,2),.5,.5);dc.DrawLine(pen,new Point(7,y),new Point(16,y));}
+            dc.Pop();return;
+        }
         var text = new FormattedText(Glyphs.GetValueOrDefault(Kind, "\uE80F"), CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, new Typeface("Segoe MDL2 Assets"), Math.Min(ActualWidth, ActualHeight), Stroke, VisualTreeHelper.GetDpi(this).PixelsPerDip);
         dc.DrawText(text, new Point((ActualWidth-text.Width)/2, (ActualHeight-text.Height)/2));
     }

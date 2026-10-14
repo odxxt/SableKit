@@ -74,3 +74,6 @@ Record durations, operation IDs, result codes, and dependency failures without r
 
 ## Implemented presentation refinement (0.1.3)
 The main window owns a set of lazy action-editor windows, one per opened action. Editors retain a captured profile for pin membership and guard their own drafts; main-window closing checks all owned drafts before closing. A shared ActionVisual renderer supplies tray buttons and the editor preview, so previewing settings cannot dispatch execution. Password generation and application actions remain host capabilities. The shell uses WPF layered windows with transparent rounded corners; it currently bypasses the native backdrop path. Content wheel motion is bounded and stops on unload/hidden state, while the profile selector has an independent dead-zone/cooldown gate.
+
+## Presentation refinement (0.1.4)
+The main window now reuses a single action editor. TryEdit checks unsaved changes before replacing its draft and updates the captured profile; cancellation retains the current draft. New action first selects a supported operation. Setup/Behavior sections share one draft, and a fixed side preview uses ActionVisual without execution. Main/editor shells use the opaque Surface resource while transparent outer pixels preserve rounded corners. The compact profile control opens direct choices and retains gated wheel/keyboard switching.

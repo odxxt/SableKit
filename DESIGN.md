@@ -149,11 +149,11 @@ components:
 
 **Creative North Star: "Smoky black, neutral charcoal and white"**
 
-Native WPF, Segoe UI and installed Segoe MDL2 Assets carry the owner's modern, compact SableLatch-inspired utility direction. This records the approved 0.1.3 refinement on 2026-10-14. The user explicitly requested an action grid, top tabs, separate action editors, sticky button preview, quieter scrolling and removal of gray window frames. Preserve the existing palette and action-first interaction.
+Native WPF, Segoe UI and installed Segoe MDL2 Assets carry the owner's modern, compact SableLatch-inspired utility direction. This records the approved 0.1.4 refinement on 2026-10-14. The user explicitly requested an action grid, top tabs, separate action editors, sticky button preview, quieter scrolling and removal of gray window frames. Preserve the existing palette and action-first interaction.
 
 Source of truth: ThemeManager.cs, Theme.xaml, Ui.cs, ActionVisual.cs and the window XAML/code-behind files under src/SableKit.Desktop. All measurements are WPF DIP. Frontmatter uses CSS-compatible RRGGBBAA for alpha colors; WPF uses AARRGGBB. Browser sidecar samples are illustrations only.
 
-The build passed 76 in-process WPF checks and 46 core checks, with 21 client renders. The independent initial review found narrow-grid and choice-focus defects; local corrections and regression checks passed. Its confirmation/documentation handoffs hit a usage limit, so no independent final sign-off is claimed. Desktop blur remains unmet. See VERIFICATION.md for scope.
+Verification evidence is recorded per build in VERIFICATION.md. Client renders are not compositor or physical-input validation. Main/editor opacity is now requested; compact desktop blur remains unmet.
 
 ## Colors
 
@@ -169,11 +169,11 @@ Compact names trim; explanatory copy wraps. Raw output preserves command line br
 
 ## Layout
 
-Tray: fixed 336 x 404, shell radius20, left/top/right/bottom padding14/12/14/14, header38. Search and clipboard suggestions are conditional. Pinned actions occupy the flexible area as list or two-column grid. Results replace that area with an explicit tool handoff. SableNet is the sole current tool shortcut; password generation and app launching belong to SableKit. The header Settings icon opens configuration; no footer Open app. The footer profile carousel uses arrows, wheel and keyboard.
+Tray: fixed 342 x 411, shell radius20, left/top/right/bottom padding14/12/14/14, header38. Search and clipboard suggestions are conditional. Pinned actions occupy the flexible area as list or two-column grid. Results replace that area with an explicit tool handoff. SableNet is the sole current tool shortcut; password generation and app launching belong to SableKit. The header Settings icon opens configuration; no footer Open app. A thin separator precedes the left-aligned tool shortcut. The footer profile control sits on the right and opens direct choices; gated wheel and left/right keyboard switching remain. Default/reset placement is18 DIP from the work-area right/bottom, exactly as the inspected SableLatch source. Saved dragged positions are retained.
 
-Main: up to920 x640, capped at90%/88% of work-area width/height, minimums relaxed for small screens. Shell padding22/8/22/18, caption row38, top navigation row46. Simple adjacent Actions/Profiles/Tools/Activity/Preferences tabs replace the sidebar. Default Actions contains search and a responsive grid of118-DIP tiles with12-DIP gaps and16-DIP inner padding; two columns fit at720 width. Clicking a tile opens settings, not execution.
+Main: up to920 x640, capped at90%/88% of work-area width/height, minimums relaxed for small screens. Shell padding22/8/22/18, caption row38, top navigation row46. Simple adjacent Actions/Profiles/Tools/Activity/Preferences tabs replace the sidebar. Tabs have fixed100-DIP widths and consistent weight so selection cannot move adjacent tabs. Default Actions contains an initially hidden search field revealed by the header search button, and a responsive grid of118-DIP tiles with12-DIP gaps and16-DIP inner padding; two columns fit at720 width. Clicking a tile opens settings, not execution.
 
-Action editor: separate owned660 x650 window capped to90%/88% of work area. Shell padding22/10/22/20 and caption38. An82-DIP preview area stays above the scrolling fields, with List/Grid selectors and a308-DIP preview region. Save/Test/Duplicate stay below the form. Existing editors are reused by action ID; closing protects drafts, including when closing the owner. Captured profile membership is stable while editing.
+Action editor: a single reusable owned800 x540 window capped to90%/88% of work area. Opening another action first protects the current draft, then switches content in the same window. New action starts with three purpose choices. Setup presents name, description and operation fields; Behavior holds kind, aliases, panel policy and pin/enabled state. The fixed242-DIP side column holds the live preview and List/Grid selectors; the form scrolls independently. Save/Test/Duplicate remain fixed below. Minimums relax for small work areas.
 
 SableNet: fixed356 x454, radius20, padding14/12/14/14, header32. Address and optional Port, DNS and fill-only presets precede flexible raw output. Bottom Check connection/Stop and Copy stay reachable. Tray and SableNet remember dragged placement and reset on a title double-click.
 
@@ -181,7 +181,7 @@ Field labels have16-DIP separation above and7 below; helper text follows by6. Pr
 
 ## Elevation & Depth
 
-The reliable depth system is tonal surfaces and thin field outlines, with no custom shadow. All four windows use AllowsTransparency=True, transparent backgrounds and rounded WPF shell borders without WindowChrome. NativeWindow bypasses DWM backdrop requests for these shells. **The current material is smoky alpha translucency, not desktop blur.** Actual compositor edges still need hands-on validation; no API or client screenshot proves them.
+The reliable depth system is tonal surfaces and thin field outlines, with no custom shadow. All four windows use AllowsTransparency=True and rounded WPF shell borders without WindowChrome. Main/editor content uses fully opaque Surface; only their outside rounded corner pixels are transparent. Compact windows retain PanelSurface alpha. NativeWindow bypasses DWM backdrop requests for these shells. **Compact material is smoky alpha translucency, not desktop blur; main/editor content is opaque as requested.** Actual compositor edges still need hands-on validation; no API or client screenshot proves them.
 
 The original blur direction remains a requirement, not an accepted alpha-only replacement. Maintain readable contrast without relying on blur. No custom DropShadowEffect or shadow scale exists.
 
@@ -189,13 +189,13 @@ Copied fades from0.65 to1 in140ms only while visible and motion is enabled. Cont
 
 ## Shapes
 
-All window shells use20-DIP rounded corners and no native outer frame. Controls, action tiles and text fields use12-DIP corners; header buttons8, choice items5 and scrollbar thumbs3. Native installed MDL2 glyphs retain SableLatch familiarity. No raster assets or browser runtime are shipped.
+All window shells use20-DIP rounded corners and no native outer frame. Controls, action tiles and text fields use12-DIP corners; header buttons8, choice items5 and scrollbar thumbs3. Native installed MDL2 glyphs retain SableLatch familiarity. List/grid view icons are small original vector drawings (four rounded tiles / three rows) instead of MDL2 view glyphs. No raster assets or browser runtime are shipped.
 
 ## Components
 
 ### Buttons and navigation
 
-Buttons have no stroke or FocusVisualStyle outline. Keyboard focus and hover use tonal fill; primary foreground changes to Text when its fill becomes Hover. Header glyphs brighten on focus/hover and retain active pin/search fill. Pressed opacity is0.72 for common buttons,0.55 for header glyphs; disabled is0.45/0.3. Header controls are28 x28, main captions36 x28. Tab padding is14/7 horizontal/vertical, minimum height34, selected fill Hover and semibold Text.
+Buttons have no stroke or FocusVisualStyle outline. Keyboard focus and hover use tonal fill; primary foreground changes to Text when its fill becomes Hover. Header glyphs brighten on focus/hover and retain active pin/search fill. Pressed opacity is0.72 for common buttons,0.55 for header glyphs; disabled is0.45/0.3. Header controls are28 x28, main captions36 x28. Tab padding is14/7 horizontal/vertical, minimum height34, fixed100 width, selected fill Inset and consistent semibold weight.
 
 ### Inputs and choices
 
@@ -203,13 +203,13 @@ TextBox focus changes its fill to Hover, preserving its thin resting field outli
 
 ### Action buttons and sticky preview
 
-ActionVisual creates both real tray buttons and preview content. List buttons are308 x46; preview grid buttons148 x72. Names, kind, password inheritance/override and description update the preview without dispatching an action. Its control is non-interactive. Only explicit Test run executes. The preview stays above the scrolling form and uses the current draft with the actual shared button rendering.
+ActionVisual creates both real tray buttons and preview content. Tray list buttons fill the available width; side previews are220 x46 in list mode and148 x72 in grid mode. Names, kind, password inheritance/override and description update the preview without dispatching an action. Its control is non-interactive. Only explicit Test run executes. The preview stays beside the scrolling form and uses the current draft with the actual shared button rendering.
 
 Running/Copied preserves dimensions and keyboard focus. Successful clipboard writes alone produce the centered17-DIP checkmark and Copied with7-DIP gap. Password values never appear in activity output.
 
 ### Scrolling and profiles
 
-Content wheel steps are27 DIP at the usual three-line setting and queue at most90 DIP from the current position. The profile wheel accumulates120 units, ignores burst input for420ms after an accepted step and resets accumulation when direction reverses. Arrow controls remain immediate and repeated keydown is ignored. This is source/in-process evidence; physical-wheel feel remains to be reviewed by the user.
+Content wheel steps are27 DIP at the usual three-line setting and queue at most90 DIP from the current position. The profile wheel accumulates120 units, ignores burst input for420ms after an accepted step and resets accumulation when direction reverses. Paired arrows are removed. Clicking the right-aligned profile button opens direct choices; repeated keydown is ignored. This is source/in-process evidence; physical-wheel feel remains to be reviewed by the user.
 
 ### Network results
 
@@ -221,6 +221,7 @@ Selectable, read-only Consolas preserves actual ping, Test-NetConnection and nsl
 - Keep keyboard focus visible through fill or foreground changes.
 - Protect drafts and separate non-executing preview from Test run.
 - Keep configuration in the main/editor windows and execution in the compact tray.
-- Do not reintroduce a sidebar, bottom Open app or standalone password tool shortcut.
+- Keep tab widths stable and use only one action editor at a time.
+- Keep main/editor surfaces opaque; do not reintroduce a sidebar, bottom Open app or standalone password tool shortcut.
 - Do not call alpha translucency blur or client renders compositor validation.
 - Do not animate hidden windows or claim the complete default bundle is implemented.

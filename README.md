@@ -2,7 +2,7 @@
 
 A portable Windows toolkit built around tools, reusable actions, and profiles. Native C# / WPF / XAML on .NET 10.
 
-**Current status: working prototype 0.1.3.** The compact panel and configuration window execute real password, application-launch, and network operations. This is the first usable slice of the intended bundle; protected tools and workflows are still planned.
+**Current status: working prototype 0.1.4.** The compact panel and configuration window execute real password, application-launch, and network operations. This is the first usable slice of the intended bundle; protected tools and workflows are still planned.
 
 ## Run the portable build
 
@@ -11,6 +11,14 @@ A portable Windows toolkit built around tools, reusable actions, and profiles. N
 3. Open the quick panel from its tray icon or **Ctrl+Alt+K**. Use the header **Settings** icon for configuration. Right-click the tray icon and choose **Quit** to exit.
 
 Settings are stored in `SableKit-data/settings.json` beside the executable, with a backup on replacement. Ordinary tools require no vault setup. The binary is unsigned. Windows 10 and 11 are intended targets; this prototype has been exercised on Windows 11 build 26200, x64. A clean machine without .NET and Windows 10 remain to be tested.
+
+## Changes in 0.1.4
+
+The main window and action editor now have fully opaque content surfaces. Top tabs keep fixed positions, and Actions retains its grid with search hidden behind a header button. Profiles uses a direct profile list and ordered pins; Preferences groups settings by purpose with a fixed Save button; Tools gives SableNet a usable launch/action entry and puts planned tools behind a disclosure. Activity gives actual output the available space.
+
+Action settings use one reusable, shorter and wider window (up to 800 x 540 DIP). Opening another action switches that editor after protecting any unsaved changes; it cannot stack another editor on top. Setup shows the operation's important fields, Behavior contains placement and execution choices, and the live preview stays at the side. New action starts with a choice of password generation, app launching or network checking. Preview never executes.
+
+The quick panel matches the inspected SableLatch size, 342 x 411 DIP, and its default/reset position 18 DIP from the work area's right and bottom edges. Saved dragged positions remain respected. A thin separator divides actions and tools; a right-aligned profile chooser replaces the paired arrows while retaining wheel switching. New vector list/grid glyphs replace the old view icons.
 
 ## Changes in 0.1.3
 
@@ -32,12 +40,12 @@ Quit the previous version before launching this build. When extracting to a new 
 
 ## Working now
 
-- Compact 336 × 404 logical-pixel panel, pinning, on-demand search and aliases, pinned list/grid view, Default/Lab profiles, results, and action states.
+- Compact 342 × 411 logical-pixel panel, pinning, on-demand search and aliases, pinned list/grid view, Default/Lab profiles, results, and action states.
 - Real cryptographic password generation and clipboard copy, with centered **Copied** feedback only after a successful write.
 - Application actions with an executable, separate literal arguments, and per-action panel behavior.
 - SableNet: editable clipboard-initialized target, ping, TCP checks and port presets, DNS/reverse lookup, cancellation, elapsed time, and result copying.
 - Main action grid and separate editors with a sticky live button preview, explicit default inheritance or override, test run, duplication, enabling/disabling, profile membership/order, theme, and reduced motion.
-- Versioned local settings; main, network and editor windows created on demand; no clipboard polling. Rounded transparent shells; dark, light, and system themes.
+- Versioned local settings; main, network and editor windows created on demand; no clipboard polling. Rounded shells with opaque main/editor content and translucent compact panels; dark, light, and system themes.
 
 **Planned:** SableType, integrated SableLatch and shared security, workflows, addon catalog/API, configurable action hotkeys, advanced command/script execution, richer inputs/results/customization, and the remaining SableNet operations. See [implementation status](IMPLEMENTATION-STATUS.md). No placeholder is presented as a working protected tool.
 
