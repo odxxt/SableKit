@@ -34,15 +34,24 @@ internal static class Verification
             var dpi = VisualTreeHelper.GetDpi(tray);
             var clippedIcons = Descendants<Icon>(tray).Where(i => i.IsVisible && (Math.Abs(i.RenderSize.Width - i.Width) > 1 / dpi.DpiScaleX || Math.Abs(i.RenderSize.Height - i.Height) > 1 / dpi.DpiScaleY)).Select(i => $"{i.Kind}: {i.Width}x{i.Height} -> {i.RenderSize}").ToArray();
             Check(clippedIcons.Length == 0, "Small icon layout matches requested dimensions within pixel rounding: " + string.Join(", ", clippedIcons));
+            var footerTop=tray.Footer.TranslatePoint(new Point(),tray).Y;
             tray.SearchButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); tray.SearchBox.Text = "random"; Check(tray.ActionsList.Items.Count == 1, "Search resolves aliases");
             await Settle(); Capture(tray, output, "tray-search.png");
+            Check(Math.Abs(footerTop-tray.Footer.TranslatePoint(new Point(),tray).Y)<1 && Math.Abs(tray.SearchBox.TranslatePoint(new Point(0,tray.SearchBox.ActualHeight/2),tray).Y-tray.SearchButton.TranslatePoint(new Point(0,tray.SearchButton.ActualHeight/2),tray).Y)<1,"Compact search stays inline without moving the footer");
+            Check(Math.Abs(tray.ToolStrip.TranslatePoint(new Point(0,tray.ToolStrip.ActualHeight/2),tray).Y-tray.ProfileStrip.TranslatePoint(new Point(0,tray.ProfileStrip.ActualHeight/2),tray).Y)<2,"Tool shortcuts and profiles share one footer row");
             Check(Equals(tray.SearchButton.Background, tray.FindResource("Hover")), "Search remains visibly active while editing");
             tray.SearchBox.Text = "no-such-action"; Check(tray.EmptyText.Visibility == Visibility.Visible, "Search empty state");
             tray.SearchButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             tray.ToggleView(null, null); await Settle(); Capture(tray, output, "tray-grid.png"); Check(state.Config.ActiveProfile.GridView, "Grid preference persisted");
             var actionsScroll = Descendants<ScrollViewer>(tray).Single(s => s.Content is StackPanel panel && panel.Children.Contains(tray.ActionsList));
             Check(actionsScroll.ScrollableHeight < 1, "Default grid tiles fit without clipping or scrolling");
-            tray.ToggleView(null, null);
+            tray.ListViewButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Check(!state.Config.ActiveProfile.GridView,"Compact list button directly selects list view");
+            tray.ViewButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Check(state.Config.ActiveProfile.GridView,"Compact grid button directly selects grid view");tray.ToggleView(null,null);
+            tray.AddToolShortcut("Test tool A","network",()=>{});tray.AddToolShortcut("Test tool B","network",()=>{});await Settle();
+            Check(tray.ToolStrip.Children.Cast<Button>().All(b=>((StackPanel)b.Content).Children.OfType<TextBlock>().All(t=>t.Visibility==Visibility.Collapsed)),"More than two tool shortcuts show icons with named tooltips");
+            tray.ToolStrip.Children.RemoveAt(2);tray.ToolStrip.Children.RemoveAt(1);tray.UpdateToolLayout();
+            var pinnedFirst=state.Config.ActiveProfile.ActionIds[0];tray.ReorderPinned(pinnedFirst,3);
+            Check(((ActionItem)((Button)tray.ActionsList.Items[^1]).Tag).Definition.Id==pinnedFirst,"Quick-panel reorder updates visible actions");tray.ReorderPinned(pinnedFirst,0);
             tray.CycleProfile(1); Check(state.Config.ActiveProfileId == "lab" && tray.ActionsList.Items.Count == 2, "Profile switch changes pinned references");
             tray.CycleProfile(-1);
             tray.ProfileButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));await Settle();
@@ -129,9 +138,9 @@ internal static class Verification
             main.MaximizeButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); await Settle(); Check(main.WindowState == WindowState.Maximized, "Caption maximize works");
             main.MaximizeButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); await Settle(); Check(main.WindowState == WindowState.Normal, "Caption restore works");
             Capture(main, output, "main-actions.png");
-            Check(main.Navigation.Orientation==Orientation.Horizontal && main.Navigation.Children.Count==5, "Main navigation uses five horizontal tabs");
+            Check(main.Navigation.Orientation==Orientation.Horizontal && main.Navigation.Children.Count==4, "Main navigation uses four fixed tabs without Activity");
             var tabPositions=main.Navigation.Children.Cast<Button>().Select(b=>b.TranslatePoint(new Point(),main).X).ToArray();
-            foreach(var destination in new[]{"Profiles","Tools","Activity","Preferences","Actions"}) {main.Navigate(destination);await Settle();Check(main.Navigation.Children.Cast<Button>().Select(b=>b.TranslatePoint(new Point(),main).X).SequenceEqual(tabPositions),"Tab positions stay fixed on "+destination);}
+            foreach(var destination in new[]{"Profiles","Tools","Preferences","Actions"}) {main.Navigate(destination);await Settle();Check(main.Navigation.Children.Cast<Button>().Select(b=>b.TranslatePoint(new Point(),main).X).SequenceEqual(tabPositions),"Tab positions stay fixed on "+destination);}
             Check(((SolidColorBrush)main.Shell.Background).Color.A==255,"Main content surface is fully opaque");
             Check(Descendants<TextBox>(main).Single(t=>System.Windows.Automation.AutomationProperties.GetName(t)=="Search action library").Visibility==Visibility.Collapsed,"Action search starts collapsed");
             main.LibrarySearchButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));await Settle();
@@ -151,8 +160,7 @@ internal static class Verification
             editor.FormScroll.ScrollToBottom(); await Settle();
             Check(Math.Abs(previewPosition.Y-editor.PreviewButton.TranslatePoint(new Point(),editor).Y)<1 && editor.PreviewButton.IsVisible, "Button preview stays fixed while settings scroll");
             Capture(editor,output,"action-editor-scrolled.png"); editor.FormScroll.ScrollToTop(); await Settle(); Capture(editor,output,"action-editor.png");
-            var librarySearch=Descendants<TextBox>(main).Single(t=>System.Windows.Automation.AutomationProperties.GetName(t)=="Search action library");
-            librarySearch.Text="ping"; Check(library.Children.Count==1 && editor.HasDraft && nameField.Text=="Edited draft", "Library search preserves a separate action draft"); librarySearch.Text="";
+            Check(!main.IsEnabled && main.ModalShade.IsVisible && editor.IsEnabled,"Editor blocks and dims the main window while staying enabled");Capture(main,output,"main-dimmed.png");
             editor.Close(); Check(editor.IsVisible, "Cancelled discard keeps the action settings window open");
             main.Close(); Check(main.IsVisible && editor.IsVisible, "Closing the main window protects owned action drafts");
             nameField.Text="";
@@ -162,11 +170,18 @@ internal static class Verification
             Descendants<Button>(editor).Single(b=>b.Content is string label && label=="Duplicate").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             Check(editor.HasDraft && !state.Config.Actions.Any(a=>a.Id==editor.EditingActionId), "Duplicate remains an unsaved protected draft");
             main.Navigate("Preferences");
-            Check(main.PageTitle.Text=="Preferences" && editor.HasDraft, "Top tab navigation leaves a separate draft intact");
+            Check(main.PageTitle.Text=="Actions" && editor.HasDraft, "Main navigation is blocked while editing");
             var originalEditorId=editor.EditingActionId;main.OpenEditor(state.Config.Actions[1]);
             Check(main.Editors.Count==1 && editor.EditingActionId==originalEditorId,"Switching actions respects a cancelled discard");
             editor.DiscardDecision=()=>true;main.OpenEditor(state.Config.Actions[1]);await Settle();
-            Check(main.Editors.Count==1 && ReferenceEquals(main.Editors.Single(),editor) && editor.EditingActionId==state.Config.Actions[1].Id,"Opening another action reuses the same settings window");Capture(editor,output,"action-network.png");editor.Close();
+            Check(main.Editors.Count==1 && ReferenceEquals(main.Editors.Single(),editor) && editor.EditingActionId==originalEditorId,"Opening another action cannot replace or overlay the focused editor");editor.Close();
+            Check(main.IsEnabled && !main.ModalShade.IsVisible,"Closing the editor restores main-window interaction");
+            main.OpenEditor(state.Config.Actions[1]);await Settle();editor=main.Editors.Single();Capture(editor,output,"action-network.png");
+            Descendants<TextBox>(editor).Single(t=>System.Windows.Automation.AutomationProperties.GetName(t)=="Name").Text="Check network";
+            Descendants<Button>(editor).Single(b=>b.Content is string label && label=="Save action").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));await Settle();
+            Check(!editor.IsVisible && main.Editors.Count==0 && main.IsEnabled && main.LastSavedActionId==state.Config.Actions[1].Id && state.Config.Actions[1].Name=="Check network","Save persists, closes the editor and targets the saved card for feedback");Capture(main,output,"main-saved.png");
+            var savedCard=Descendants<Button>(main).Single(b=>b.Tag is ActionDefinition a && a.Id==main.LastSavedActionId);
+            if(UiMotion.Enabled)Check(System.Windows.Documents.AdornerLayer.GetAdornerLayer(savedCard)?.GetAdorners(savedCard)?.Length>0,"Saved card has a short highlight animation after layout");
             main.Navigate("Actions"); main.AddButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); await Settle();
             var created=main.Editors.Single(); created.DiscardDecision=()=>true;
             Check(created.EditingActionId is null && !created.HasDraft,"New action starts with a choice of working action types");Capture(created,output,"action-choose.png");
@@ -202,8 +217,36 @@ internal static class Verification
             main.FitToWorkArea(workArea);
             main.Navigate("Tools");await Settle();Capture(main,output,"main-tools.png");
             Check(Descendants<Button>(main).Any(b=>b.Content is string title && title=="Open SableNet") && !Descendants<Button>(main).Any(b=>b.Content is string title && title=="Open SableLatch"),"Tools exposes real installed operations and separates planned tools");
-            main.Navigate("Activity");await Settle();Capture(main,output,"main-activity.png");
             main.Navigate("Profiles"); await Settle(); Capture(main, output, "main-profiles.png");
+            var profileCount=state.Config.Profiles.Count;
+            Descendants<Button>(main).Single(b=>b.Content is string s && s.Contains("New profile")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));await Settle();
+            Check(main.ProfileNameInput is { IsVisible:true,Opacity:<1 } && state.Config.Profiles.Count==profileCount,"New profile is an inline faded unsaved draft");Capture(main,output,"profile-draft.png");
+            main.PageTitle.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=Mouse.PreviewMouseDownEvent});Check(state.Config.Profiles.Count==profileCount && main.ProfileNameInput is null,"Clicking outside an empty profile name discards its draft");
+            main.BeginProfileName(null);await Settle();main.ProfileNameInput!.Text="Customer";main.FinishProfileName(true);await Settle();
+            Check(state.Config.Profiles.Count==profileCount+1 && state.Config.ActiveProfile.Name=="Customer","Inline name commits a new active profile");
+            var profileButton=Descendants<Button>(main).Single(b=>ReferenceEquals(b.Tag,state.Config.ActiveProfile));
+            profileButton.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=Control.MouseDoubleClickEvent});await Settle();
+            Check(main.ProfileNameInput?.Text=="Customer","Double-clicking a profile opens inline rename");main.ProfileNameInput!.Text="Customer lab";main.FinishProfileName(true);await Settle();
+            Descendants<Button>(main).Single(b=>b.Content is string s && s=="Add actions").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));await Settle();
+            Descendants<Button>(main).Single(b=>b.Content is string s && s=="+  "+state.Config.Actions[0].Name).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            main.AddProfileAction(state.Config.Actions[1].Id);main.AddProfileAction(state.Config.Actions[2].Id);main.AddProfileAction(state.Config.Actions[0].Id);await Settle();
+            Check(state.Config.ActiveProfile.ActionIds.Count==3,"Profile library picker adds actions without duplicates");
+            var otherOrder=state.Config.Profiles[0].ActionIds.ToArray();var moved=state.Config.ActiveProfile.ActionIds[0];
+            Check(ActionReorder.Move(state,state.Config.ActiveProfile,moved,3) && state.Config.ActiveProfile.ActionIds[^1]==moved,"Shared drag insertion moves an action to the end");
+            Check(ActionReorder.Move(state,state.Config.ActiveProfile,moved,0) && state.Config.ActiveProfile.ActionIds[0]==moved,"Shared drag insertion moves an action to the beginning");
+            Check(!ActionReorder.Move(state,state.Config.ActiveProfile,moved,1) && !ActionReorder.Move(state,state.Config.ActiveProfile,"missing",0) && otherOrder.SequenceEqual(state.Config.Profiles[0].ActionIds),"Drag no-ops and missing IDs preserve order and other profiles");
+            main.Navigate("Profiles");await Settle();Capture(main,output,"profile-actions.png");
+            state.Config.ActiveProfileId="default";state.Save();main.Navigate("Actions");await Settle();
+            main.LibraryListButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));await Settle();
+            Check(Descendants<WrapPanel>(main).Single(p=>p.Name=="ActionLibrary").Children.Cast<Button>().All(b=>b.Height==58),"Main library exposes a direct list choice");Capture(main,output,"main-list.png");
+            Check(Descendants<WrapPanel>(main).Single(p=>p.Name=="ActionLibrary").Children.Cast<Button>().All(b=>Descendants<TextBlock>(b).All(t=>t.TranslatePoint(new Point(0,t.ActualHeight),b).Y<=b.ActualHeight-b.Padding.Bottom+1)),"Main list descriptions fit fully inside each row");
+            main.LibraryGridButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));await Settle();
+            Check(Descendants<WrapPanel>(main).Single(p=>p.Name=="ActionLibrary").Children.Cast<Button>().All(b=>b.Height==118),"Main library exposes a direct grid choice");
+            Check(Math.Abs(main.LibrarySearch.TranslatePoint(new Point(0,main.LibrarySearch.ActualHeight/2),main).Y-main.LibrarySearchButton.TranslatePoint(new Point(0,main.LibrarySearchButton.ActualHeight/2),main).Y)<1,"Main search is inline with its icon");
+            var resizeGrip=Descendants<System.Windows.Controls.Primitives.Thumb>(main).First(t=>t.Cursor==Cursors.SizeWE && t.HorizontalAlignment==HorizontalAlignment.Right);
+            var oldWidth=main.Width;resizeGrip.RaiseEvent(new System.Windows.Controls.Primitives.DragDeltaEventArgs(-30,0){RoutedEvent=System.Windows.Controls.Primitives.Thumb.DragDeltaEvent});
+            Check(main.Width<oldWidth,"Window edge grip resizes the main window");
+            resizeGrip.RaiseEvent(new System.Windows.Controls.Primitives.DragDeltaEventArgs(-10000,0){RoutedEvent=System.Windows.Controls.Primitives.Thumb.DragDeltaEvent});Check(main.Width==main.MinWidth,"Window resize stops at its screen-bounded minimum");
             main.Navigate("Preferences"); await Settle(); Capture(main, output, "main-preferences.png");
             main.Navigate("Actions"); main.Width = 720; main.Height = 480; await Settle(); Capture(main, output, "main-minimum.png");
             var narrowGrid=Descendants<WrapPanel>(main).Single(w=>w.Name=="ActionLibrary");
@@ -223,6 +266,9 @@ internal static class Verification
                 var bitmap=Render(window); var pixel=new byte[4]; bitmap.CopyPixels(new Int32Rect(0,0,1,1),pixel,4,0);
                 Check(window.AllowsTransparency && System.Windows.Shell.WindowChrome.GetWindowChrome(window) is null && pixel[3]==0, window.Title+" has transparent rounded corners without system chrome");
             }
+            main.Navigate("Tools");await Settle();main.OpenNetworkTool();await Settle();
+            var openedTool=Application.Current.Windows.OfType<NetworkWindow>().Single(w=>!ReferenceEquals(w,net));
+            Check(!main.IsVisible && openedTool.IsVisible,"Opening SableNet from Tools hides the main window");openedTool.Close();main.Show();
             main.CloseButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); Check(!main.IsVisible, "Caption close works"); main = null; net.Close(); net = null; tray.Hide();
             var timings = new List<double>(); for (var i = 0; i < 10; i++) { watch.Restart(); tray.Open(false); await Settle(); timings.Add(watch.Elapsed.TotalMilliseconds); tray.Hide(); }
             using var process = Process.GetCurrentProcess(); var cpuStart = process.TotalProcessorTime; var idleClock = Stopwatch.StartNew(); await Task.Delay(3000); process.Refresh();
@@ -248,7 +294,7 @@ internal static class Verification
     private static RenderTargetBitmap Render(Window window)
     {
         window.UpdateLayout(); var content=(FrameworkElement)window.Content;
-        var bitmap=new RenderTargetBitmap((int)content.ActualWidth,(int)content.ActualHeight,96,96,PixelFormats.Pbgra32); bitmap.Render(content); return bitmap;
+        var bitmap=new RenderTargetBitmap((int)window.ActualWidth,(int)window.ActualHeight,96,96,PixelFormats.Pbgra32); bitmap.Render(content); return bitmap;
     }
     private static void Capture(Window window, string folder, string name)
     {

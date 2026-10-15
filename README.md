@@ -2,7 +2,7 @@
 
 A portable Windows toolkit built around tools, reusable actions, and profiles. Native C# / WPF / XAML on .NET 10.
 
-**Current status: working prototype 0.1.4.** The compact panel and configuration window execute real password, application-launch, and network operations. This is the first usable slice of the intended bundle; protected tools and workflows are still planned.
+**Current status: working prototype 0.1.5.** The compact panel and configuration window execute real password, application-launch, and network operations. This is the first usable slice of the intended bundle; protected tools and workflows are still planned.
 
 ## Run the portable build
 
@@ -12,7 +12,17 @@ A portable Windows toolkit built around tools, reusable actions, and profiles. N
 
 Settings are stored in `SableKit-data/settings.json` beside the executable, with a backup on replacement. Ordinary tools require no vault setup. The binary is unsigned. Windows 10 and 11 are intended targets; this prototype has been exercised on Windows 11 build 26200, x64. A clean machine without .NET and Windows 10 remain to be tested.
 
-## Changes in 0.1.4
+## Changes in 0.1.5
+
+Action settings now block and dim the main window, with an opaque surface and a soft shadow. Only one editor can be open. Saving closes it, reveals the saved action and plays a brief sheen across its card; reduced motion skips the animation. Unsaved closing still asks before discarding.
+
+Both action surfaces offer separate list/grid buttons. Search opens inline beside its icon, without moving the quick-panel footer. The main window has real edge/corner resize handles with screen-bounded minimums. Activity has been removed.
+
+Profiles use a single New profile button and a faded inline name draft. Enter or leaving the field commits a nonempty name; clicking away from an empty draft discards it. Double-click a name to rename it. Add actions opens the shared library, and drag actions to reorder either in Profiles or directly in the quick panel. The gesture threshold, insertion marker and edge scrolling adapt SableLatch's implementation; required notices are retained. Profiles also supports Alt+Up/Down on a focused action row.
+
+Tools and the profile chooser share one compact footer row. Tool labels collapse to icons when there are more than two tools or space is tight. SableNet is still the only installed tool. Opening it from Tools hides the main window. Its compact UI now groups the address, optional port and presets above native output, with a full-width check button at the bottom.
+
+## Earlier changes in 0.1.4
 
 The main window and action editor now have fully opaque content surfaces. Top tabs keep fixed positions, and Actions retains its grid with search hidden behind a header button. Profiles uses a direct profile list and ordered pins; Preferences groups settings by purpose with a fixed Save button; Tools gives SableNet a usable launch/action entry and puts planned tools behind a disclosure. Activity gives actual output the available space.
 
@@ -45,7 +55,7 @@ Quit the previous version before launching this build. When extracting to a new 
 - Application actions with an executable, separate literal arguments, and per-action panel behavior.
 - SableNet: editable clipboard-initialized target, ping, TCP checks and port presets, DNS/reverse lookup, cancellation, elapsed time, and result copying.
 - Main action grid and separate editors with a sticky live button preview, explicit default inheritance or override, test run, duplication, enabling/disabling, profile membership/order, theme, and reduced motion.
-- Versioned local settings; main, network and editor windows created on demand; no clipboard polling. Rounded shells with opaque main/editor content and translucent compact panels; dark, light, and system themes.
+- Versioned local settings; main, network and editor windows created on demand; no clipboard polling. Rounded shells with opaque main/editor content and a translucent quick panel; dark, light, and system themes.
 
 **Planned:** SableType, integrated SableLatch and shared security, workflows, addon catalog/API, configurable action hotkeys, advanced command/script execution, richer inputs/results/customization, and the remaining SableNet operations. See [implementation status](IMPLEMENTATION-STATUS.md). No placeholder is presented as a working protected tool.
 
@@ -68,4 +78,4 @@ For the optional Windows UI harness, run the published executable with `--verify
 - `tests/SableKit.Tests`: meaningful core checks without external test packages.
 - [Product requirements](PRODUCT-REQUIREMENTS.md), [architecture](ARCHITECTURE.md), [milestones](MILESTONES.md), [verification](VERIFICATION.md), [design system](DESIGN.md).
 
-The new repository was inspected empty before the foundation was written. The owner subsequently approved direct implementation and a smoky charcoal visual direction. SableLatch was inspected as a UX reference; 0.1.2 adapts its borderless header styling and placement behavior; 0.1.3 also adapts its smooth-scrolling approach and uses the same installed Windows icon family. See THIRD-PARTY-NOTICES.txt and SABLELATCH-NOTICE.txt. No font files are redistributed.
+The new repository was inspected empty before the foundation was written. The owner subsequently approved direct implementation and a smoky charcoal visual direction. SableLatch was inspected as a UX reference; 0.1.2 adapts its borderless header styling and placement behavior; 0.1.3 also adapts its smooth-scrolling approach, and 0.1.5 adapts its drag-ordering approach and uses the same installed Windows icon family. See THIRD-PARTY-NOTICES.txt and SABLELATCH-NOTICE.txt. No font files are redistributed.

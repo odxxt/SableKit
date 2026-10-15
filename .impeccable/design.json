@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-14",
+  "generatedAt": "2026-10-15",
   "title": "Design System: SableKit",
   "extensions": {
     "colorMeta": {
@@ -385,14 +385,14 @@
       "rampProvenance": "Tonal ramps are synthetic OKLCH display aids only. They are not runtime palette values, established design tokens or new palette commitments.",
       "material": "Main/editor content is fully opaque Surface as requested. Transparent corner pixels retain radius20. Compact panels retain alpha PanelSurface without desktop blur; compositor verification pending.",
       "highContrast": "Runtime brushes map to SystemColors WindowBrush, WindowTextBrush and HighlightBrush. Native behavior remains partially unverified.",
-      "verification": "See VERIFICATION.md for0.1.4 local checks/captures. No independent0.1.4 review or compositor/physical input validation claimed.",
+      "verification": "See VERIFICATION.md for0.1.5 local checks/captures. No independent0.1.5 review or compositor/physical input validation claimed.",
       "detector": "Web/CSS detector is not applicable to native WPF source. Sidecar previews are not the shipped interface.",
-      "layout": "0.1.4: main up to920x640 with fixed100-DIP top tabs, action grid and expandable search. One reusable800x540 editor with Setup/Behavior and fixed242-DIP side preview. Tray342x411; SableNet356x454. Radius20, no WindowChrome.",
+      "layout": "0.1.5: resizable main up to920x640 initially, four fixed tabs, direct list/grid and inline search. One modal800x540 editor with dimmed owner, shadow, save-close sheen and sticky preview. Inline profile creation/rename and shared animated drag ordering. Tray342x411 with one tool/profile footer; opaque SableNet356x454.",
       "headerControls": "Installed Segoe MDL2 Assets Search E721, Pin E718, Close E8BB. Borderless 28x28-DIP controls with 14-DIP glyphs and 8-DIP radius. Muted glyph brightens to Text on hover/keyboard focus; no focus underline. Active search/pin uses Hover fill without changing the brand title. Pressed glyph opacity .55; disabled control opacity .3. Main caption controls override bounds to 36x28 DIP. Windows font is not redistributed.",
       "icons": "All named application icons in Icon.cs now render installed Segoe MDL2 Assets glyphs at requested dimensions. Browser preview SVGs are illustrative substitutes, not the shipped native glyph rendering.",
       "placement": "Tray and SableNet persist dragged placement separately and reset placement on a brand double-click. Placement restoration clamps to SystemParameters.WorkArea; physical multi-monitor/DPI behavior remains unverified.",
       "profileCarousel": "Right-aligned profile button opens direct choices; no paired arrows. Wheel accumulates120 and gates420ms; keyboard left/right retained.",
-      "results": "Tray quick results replace the action area, then hand off network target/output to SableNet or other details to Activity. Successful password copies retain centered Copied feedback. Read-only output is Consolas 10 DIP in the tray and 11 DIP in SableNet, with no wrapping and horizontal/vertical scrollbars. TextBox templates honor BorderThickness=0 on output fields.",
+      "results": "Tray quick results replace the action area, then hand off network target/output to SableNet or other details to Actions. Successful password copies retain centered Copied feedback. Read-only output is Consolas 10 DIP in the tray and 11 DIP in SableNet, with no wrapping and horizontal/vertical scrollbars. TextBox templates honor BorderThickness=0 on output fields.",
       "network": "SableNet has a 13-DIP brand, Address and optional Port fields, DNS action and SSH/HTTP/HTTPS/RDP/SMB presets that populate Port without running. Bottom Check connection becomes Stop while running. Native ping, Test-NetConnection and nslookup output occupies the flexible result area. Multiple detected addresses show an unselected Choose detected address prompt; selecting preserves choices, while an explicit target/result handoff clears and hides them.",
       "focus": "No button/tab focus outlines; fill or foreground cues. Text fields and closed choices use Hover fill on keyboard focus.",
       "preview": "One editor, unsaved-switch guard, purpose chooser for new actions. Shared ActionVisual in a fixed side column:220x46 list or148x72 grid; no execution."
@@ -481,7 +481,7 @@
   ],
   "narrative": {
     "northStar": "Smoky black, neutral charcoal and white",
-    "overview": "SableKit0.1.4 keeps the action grid and compact neutral design, with opaque larger windows, stable tabs, task-oriented main pages and one wider editor with a side preview and guided start.",
+    "overview": "SableKit0.1.5 adds focused modal editing, inline search and profile naming, direct view choices, shared drag ordering, a combined compact footer and a clearer SableNet layout.",
     "keyCharacteristics": [
       "Compact controls with clear action labels and quieter supporting text.",
       "Charcoal and white emphasis, with semantic status resources.",

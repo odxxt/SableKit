@@ -77,3 +77,12 @@ The main window owns a set of lazy action-editor windows, one per opened action.
 
 ## Presentation refinement (0.1.4)
 The main window now reuses a single action editor. TryEdit checks unsaved changes before replacing its draft and updates the captured profile; cancellation retains the current draft. New action first selects a supported operation. Setup/Behavior sections share one draft, and a fixed side preview uses ActionVisual without execution. Main/editor shells use the opaque Surface resource while transparent outer pixels preserve rounded corners. The compact profile control opens direct choices and retains gated wheel/keyboard switching.
+
+
+## Current presentation (0.1.5, supersedes editor behavior above)
+
+The main window allows exactly one owned editor and disables itself with a visible dim layer until it closes. Save raises the saved action ID, closes the editor, clears any hiding search filter and schedules a short adorner sheen after layout. UiMotion honors reduced motion and removes the adorner on completion or hiding. The editor adds a bounded WPF drop shadow; main and network content remain opaque.
+
+ActionReorder is shared by Profiles and the quick panel. It uses the OS movement threshold, a private per-host drag format plus an active local ID, insertion markers, edge scrolling, and 180 ms reorder transitions. It rejects external drags, blocks ordering during execution and filtered tray search, suppresses the release click after dragging, and rolls back the in-memory order if saving fails. Profile membership is shared action IDs, so ordering one profile does not alter another. Profile rows retain an Alt+Up/Down keyboard path. Full native drag feel remains to be checked by hand.
+
+WindowResize supplies transparent edge/corner grips around the rounded main shell. It clamps sizing to the current work area's minimum/maximum constraints and leaves a maximized window alone. Search lives in the toolbar; the quick-panel tools and profile chooser use one footer row, with responsive tool-label collapse. SableNet's entry point hides the main window before showing its compact interface.

@@ -23,11 +23,14 @@ public partial class TrayWindow : Window
         Closing+=(_,e)=>{ if(!App.Exiting){ e.Cancel=true;Hide(); } };
         PreviewKeyDown+=KeyDownPanel;
         state.Changed+=Refresh; state.ResultChanged+=UpdateResult; state.HideRequested+=Hide;
+        AddToolShortcut("SableNet","network",()=>{Hide();((App)Application.Current).OpenNetwork();});
+        Footer.SizeChanged+=(_,_)=>UpdateToolLayout();
+        _=new ActionReorder(ActionScroll,()=>ActionsList.Items.Cast<FrameworkElement>(),()=>string.IsNullOrWhiteSpace(SearchBox.Text)&&!state.IsRunning,ReorderPinned);
         Refresh();
     }
     internal void HandleDeactivated(bool trayInteraction)
     {
-        if(Pinned || VerificationMode) return;
+        if(Pinned || VerificationMode || ActionReorder.IsDragging) return;
         if(trayInteraction) trayDeactivatedAt=Environment.TickCount64;
         Hide();
     }
@@ -66,6 +69,22 @@ public partial class TrayWindow : Window
         }
         catch(System.Runtime.InteropServices.COMException) { }
     }
+    internal void AddToolShortcut(string name,string icon,Action open)
+    {
+        var content=new StackPanel { Orientation=Orientation.Horizontal };content.Children.Add(new Icon { Kind=icon,Width=15,Height=15 });content.Children.Add(new TextBlock { Text=name,FontSize=11,Margin=new Thickness(6,0,0,0),VerticalAlignment=VerticalAlignment.Center });
+        var button=new Button { Content=content,Padding=new Thickness(8,4,8,4),ToolTip=name,Tag=name };System.Windows.Automation.AutomationProperties.SetName(button,name);button.Click+=(_,_)=>open();ToolStrip.Children.Add(button);UpdateToolLayout();
+    }
+    internal void UpdateToolLayout()
+    {
+        var iconsOnly=ToolStrip.Children.Count>2 || (Footer.ActualWidth>0 && Footer.ActualWidth-130<ToolStrip.Children.Count*94);
+        foreach(Button button in ToolStrip.Children)if(button.Content is StackPanel content)foreach(var label in content.Children.OfType<TextBlock>())label.Visibility=iconsOnly?Visibility.Collapsed:Visibility.Visible;
+    }
+    internal void ReorderPinned(string id,int at)
+    {
+        try{ActionReorder.Move(state,state.Config.ActiveProfile,id,at);}catch(Exception ex) when(ex is IOException or UnauthorizedAccessException or InvalidDataException){state.SetResult("Could not reorder actions",ex.Message,true);}
+    }
+    private void ShowList(object sender,RoutedEventArgs e){state.Config.ActiveProfile.GridView=false;Save();}
+    private void ShowGrid(object sender,RoutedEventArgs e){state.Config.ActiveProfile.GridView=true;Save();}
     private void ChooseProfile(object sender,RoutedEventArgs e)
     {
         ProfileChoices.Children.Clear();
@@ -125,7 +144,7 @@ public partial class TrayWindow : Window
 
             if (item.Copied && IsVisible && !state.Config.ReducedMotion && SystemParameters.ClientAreaAnimation) content.BeginAnimation(OpacityProperty, new System.Windows.Media.Animation.DoubleAnimation(0.65, 1, TimeSpan.FromMilliseconds(140)) { FillBehavior = System.Windows.Media.Animation.FillBehavior.Stop });
 
-            button.Content = content; button.Click += async (_, _) => await state.ExecuteAsync(item); ActionsList.Items.Add(button);
+            button.Content = content; button.Click += async (_, _) => {if(!ActionReorder.SuppressClick)await state.ExecuteAsync(item);}; ActionsList.Items.Add(button);
 
         }
 
@@ -138,9 +157,7 @@ public partial class TrayWindow : Window
 
         EmptyText.Text = searching ? "No actions match. Try another name or alias." : "Pin actions from the main app to make them available here.";
 
-        ViewIcon.Kind = profile.GridView ? "list" : "grid"; ViewButton.ToolTip = profile.GridView ? "Switch pinned actions to list" : "Switch pinned actions to grid";
-
-        AutomationProperties.SetName(ViewButton, ViewButton.ToolTip.ToString());
+        ViewIcon.Kind="grid";ListViewButton.SetResourceReference(BackgroundProperty,grid?"Surface":"Hover");ViewButton.SetResourceReference(BackgroundProperty,grid?"Hover":"Surface");
 
     }
 
@@ -163,7 +180,7 @@ public partial class TrayWindow : Window
     private void ToggleSearch(object sender,RoutedEventArgs e)=>SetSearchVisible(SearchBox.Visibility!=Visibility.Visible);
     private void SetSearchVisible(bool visible)
     {
-        DismissResult(this,new RoutedEventArgs()); SearchBox.Visibility=visible?Visibility.Visible:Visibility.Collapsed;
+        DismissResult(this,new RoutedEventArgs()); SearchBox.Visibility=visible?Visibility.Visible:Visibility.Collapsed;PanelTitle.Visibility=visible?Visibility.Collapsed:Visibility.Visible;
         if(visible) SearchButton.SetResourceReference(BackgroundProperty,"Hover"); else { SearchButton.Background=Brushes.Transparent; SearchBox.Text=""; }
         SearchButton.ToolTip=visible?"Close search":"Search"; if(visible) SearchBox.Focus();
     }
@@ -186,7 +203,7 @@ public partial class TrayWindow : Window
     }
     private void DragHeader(object sender,MouseButtonEventArgs e)
     {
-        if(FindParent<Button>(e.OriginalSource as DependencyObject) is not null) return;
+        if(FindParent<Button>(e.OriginalSource as DependencyObject) is not null || FindParent<TextBox>(e.OriginalSource as DependencyObject) is not null) return;
         try { if(e.ClickCount==2 && FindParent<TextBlock>(e.OriginalSource as DependencyObject)==PanelTitle) { ResetPosition();e.Handled=true; } else { DragMove();SavePosition(); } }
         catch(Exception ex) when(ex is IOException or UnauthorizedAccessException or InvalidOperationException) { state.SetResult("Position could not be saved",ex.Message,true); }
     }
@@ -200,7 +217,7 @@ public partial class TrayWindow : Window
     {
         Hide();
         if(state.LastActionKind==ActionKind.Network) ((App)Application.Current).OpenNetwork(state.LastNetworkTarget,state.Result,state.LastCandidates);
-        else ((App)Application.Current).OpenMain("Activity");
+        else ((App)Application.Current).OpenMain();
     }
     private void OpenNetwork(object sender,RoutedEventArgs e) { Hide();((App)Application.Current).OpenNetwork(); }
     private async void KeyDownPanel(object sender,KeyEventArgs e)

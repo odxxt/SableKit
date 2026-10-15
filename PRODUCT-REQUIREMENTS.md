@@ -179,3 +179,10 @@ SableNet should be a compact panel with address followed by a separate optional 
 
 ## Further approved refinement - 2026-10-14
 The owner rejected the cramped action form and the non-Actions main pages. Main/editor content must be opaque; action settings shorter and wider, with one editor reused when switching actions and unsaved drafts protected. Keep the action grid, make search expandable, and give top tabs fixed positions. Reorganize Profiles, Preferences, Activity and Tools around their actual tasks; start new actions with a clear choice of purpose. Match SableLatch's 342 x 411 DIP compact size and 18-DIP default/reset offset, add an actions/tools separator, move the profile control to the side without paired arrows, and replace list/grid view glyphs.
+
+
+## Owner refinement, 2026-10-15
+
+Action editing must disable and dim its owner and visually separate the dialog. Save closes the editor and briefly highlights the saved action. Expose list and grid directly in both action surfaces, and expand search inline beside its icon. Remove Activity. Make the main window resizable within useful screen-relative limits; opening a compact tool hides the main window.
+
+Create profiles through one button and a faded inline draft; discard an unnamed draft on click-away and rename by double-click. Add shared actions to profiles and reorder through drag/drop in Profiles and the quick panel, following SableLatch's gesture and motion behavior. Share the footer row between tool shortcuts and profiles; use icon-only tools above two tools or when space requires it. Refine SableNet's address/port/output hierarchy without replacing native command output.

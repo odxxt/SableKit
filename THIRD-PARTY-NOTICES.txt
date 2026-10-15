@@ -1,5 +1,6 @@
 The header control styling in Theme.xaml and compact placement/reset behavior
-in PanelPlacement.cs, and the scrolling approach in SmoothScrolling.cs, are adapted from SableLatch (odxxt), reference commit
+in PanelPlacement.cs, the scrolling approach in SmoothScrolling.cs, and the
+drag threshold/insertion/edge-scroll approach in ActionReorder.cs are adapted from SableLatch (odxxt), reference commit
 59a077a, under the MIT license reproduced in SABLELATCH-NOTICE.txt.
 Interface glyphs use the Segoe MDL2 Assets font installed with Windows;
 no font files are redistributed. Preserve the separate runtime notices

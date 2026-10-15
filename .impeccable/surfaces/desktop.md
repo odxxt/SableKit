@@ -1,12 +1,11 @@
 # Desktop surfaces
 
-Mode: Operate. Native WPF tray, action grid, one action editor and compact network checks.
+## Current direction — 2026-10-15 / 0.1.5
 
-## Current direction - 2026-10-14 / 0.1.4
-Keep the action grid the owner likes. Main/editor content is opaque. Main tabs have fixed positions and restrained fill; search expands from a header icon. Profiles uses a profile list and ordered pins. Preferences uses labeled sections with fixed Save. Tools leads with available SableNet and separates planned tools. Activity prioritizes real output.
+Keep the action grid and stable four-tab navigation: Actions, Profiles, Tools, Preferences. Main and network content is opaque. Search expands inline; both action surfaces expose list and grid directly. The main window has bounded edge/corner resizing.
 
-Action settings reuse a single800x540 window. Protect unsaved changes before switching actions. New action begins with a purpose choice, then Setup/Behavior sections and a sticky side preview. Preview never executes.
+A single opaque800x540 action dialog disables/dims its owner and has a soft shadow. Save closes it and briefly highlights the saved card. Unsaved close remains guarded. Purpose choice, Setup/Behavior and the non-executing sticky preview remain.
 
-Tray342x411 exactly matches inspected SableLatch dimensions, subject to device-pixel rounding. Default/reset sits18DIP from right/bottom of work area; dragged positions persist. A thin divider separates actions/tools. The profile control sits on the right with direct choices and gated wheel navigation. List/grid use original vector view glyphs.
+Profiles use faded inline creation, double-click rename, a library picker and animated drag order. The quick panel shares drag ordering. Tray 342x411 and 18-DIP bottom-right placement still match SableLatch. The divider precedes one tool/profile row; tool labels collapse responsively. SableNet remains the only installed tool, with address/port/presets/native-output hierarchy and a bottom check.
 
-Main/editor opaque Surface, compact alpha PanelSurface; all shells rounded20DIP without native frame chrome. Compact blur remains unimplemented. Source and local in-process evidence do not prove compositor edges or physical mouse/keyboard travel. See VERIFICATION.md.
+Reduced motion disables the save sheen and reorder transitions. Alpha translucency in the quick panel does not provide desktop blur. Client captures and routed-event checks do not verify physical drag feel, compositor edges or live DPI changes. See VERIFICATION.md.

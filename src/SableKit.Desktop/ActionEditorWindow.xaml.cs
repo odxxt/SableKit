@@ -7,6 +7,7 @@ public partial class ActionEditorWindow : Window
     private bool dirty;
     internal Func<bool>? DiscardDecision { get; set; }
     internal bool HasDraft => dirty;
+    internal event Action<string>? Saved;
     internal string? EditingActionId { get; private set; }
     internal Button PreviewButton { get; private set; } = null!;
     internal ScrollViewer FormScroll { get; private set; } = null!;
@@ -147,7 +148,7 @@ public partial class ActionEditorWindow : Window
                 var draft = Draft(); var index = state.Config.Actions.FindIndex(a => a.Id == source.Id);
                 if (index < 0) state.Config.Actions.Add(draft); else state.Config.Actions[index] = draft;
                 var ids = profile.ActionIds; if (pinned.IsChecked == true && !ids.Contains(draft.Id)) ids.Add(draft.Id); if (pinned.IsChecked != true) ids.Remove(draft.Id);
-                state.Save(); dirty = false; EditorContent.Content = BuildEditor(draft); StatusText.Text = "Action saved.";
+                state.Save(); dirty = false; Saved?.Invoke(draft.Id); Close();
             }
             catch (Exception ex) when (ex is InvalidOperationException or IOException or UnauthorizedAccessException) { StatusText.Text = ex.Message; }
         }, "PrimaryButton"); bottom.Children.Add(save);

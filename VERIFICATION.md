@@ -1,3 +1,27 @@
+# Verification — prototype 0.1.5 interaction refinement
+
+Recorded 2026-10-15 on Windows 11 build 26200, SDK 10.0.401 / runtime 10.0.12. Release WPF build and self-contained x64 publish passed.
+
+## Current evidence
+
+**117 in-process WPF checks and 46 core checks passed**, with 32 diagnostic client captures. New coverage includes owner blocking/dimming, one focused editor, save-close plus a post-layout highlight adorner, inline search alignment and stable footer placement, direct list/grid choices, fully visible list descriptions, inline faded profile creation and empty click-away discard, double-click rename, shared-library additions without duplicates, order movement/no-ops/profile isolation, responsive icon-only tool labels, resize grips/minimums and hiding the main window when opening SableNet.
+
+The existing real clipboard copy, local TCP, native ping/Test-NetConnection output, cancellation, target preservation, saved panel placement, profile switching, draft protection, light/dark and screen-fit checks still pass. Visual inspection covered main grid/list, small main window, dimmed owner, saved-card sheen, editor/small editor, profile draft and action membership, inline quick search, footer and SableNet input/results. A clipped list description was corrected before the final successful run.
+
+The harness uses actual WPF windows with routed/programmatic events, real Windows clipboard APIs and local command processes. The shared reorder operation and visible refresh are checked; a physical drag/drop gesture and its full animation feel have **not** been verified. RenderTargetBitmap captures show client content, not desktop compositing or the editor shadow over another window. Physical tray input, actual compositor edges, screen readers, high contrast, live monitor/DPI transitions, Windows 10 and clean-machine portability remain hands-on checks.
+
+## Performance sample
+
+One separate Release panel-only process measured startup to UI idle at 2,044 ms and five warm openings at 1.7–3.3 ms. Visible working set/private bytes were 152.5/79.0 MiB; hidden 152.8/79.3 MiB. Five-second CPU samples measured1.56% visible and 0.31% hidden of one logical core. Main/editor/tool windows were not created. These are short local diagnostic samples, not presentation timings or performance guarantees; they vary from earlier samples. Download size includes the runtime and is recorded separately in the package manifest.
+
+## Scope and design tooling
+
+Only the quick panel retains alpha translucency; main, editor and SableNet content is opaque. True desktop blur remains unimplemented. Reordering adapts the inspected SableLatch implementation with its required notice. No third-party UI dependency was added. The requested skill search found no curated WPF design skill; no new skill was installed and no independent design approval is claimed. SableType, SableLatch/security, workflows and the addon API/catalog remain planned. Existing running versions and user settings were not replaced.
+
+Earlier records below describe previous builds and do not override this version.
+
+---
+
 # Verification - prototype 0.1.4 main-window and editing redesign
 
 Recorded 2026-10-14 on Windows 11 build 26200, SDK 10.0.401 / runtime 10.0.12. Release build and self-contained x64 publish passed.
